@@ -10,8 +10,8 @@ use Illuminate\Support\Facades\Route;
 
 // Halaman utama
 Route::get('/', function () {
-    return view('welcome');
-})->name('welcome');
+    return view('dashboard');
+})->name('dashboard');
 
 // Halaman statis
 Route::get('/tentang', function () {
@@ -34,6 +34,50 @@ Route::get('/alumni/testimoni', function () {
 Route::get('/alumni/agenda', function () {
     return view('alumni.agenda');
 })->name('alumni.agenda');
+
+// === ROUTE PER PRODI ===
+// S1
+Route::get('/alumni/s1/pai', function () {
+    return view('alumni.s1.pai');
+})->name('alumni.s1.pai');
+
+// === ALUMNI PGMI ===
+Route::get('/alumni/s1/pgmi', [AlumniController::class, 'pgmiIndex'])->name('alumni.s1.pgmi');
+Route::prefix('alumni/s1/pgmi')->name('alumni.s1.pgmi.')->group(function () {
+    Route::get('/', [AlumniController::class, 'pgmiIndex'])->name('');
+    Route::get('/create', [AlumniController::class, 'pgmiCreate'])->name('create');
+    Route::post('/store', [AlumniController::class, 'pgmiStore'])->name('store');
+    Route::get('/{id}', [AlumniController::class, 'pgmiShow'])->name('show');
+});
+
+Route::get('/alumni/s1/piaud', function () {
+    return view('alumni.s1.piaud');
+})->name('alumni.s1.piaud');
+
+Route::get('/alumni/s1/mpi', function () {
+    return view('alumni.s1.mpi');
+})->name('alumni.s1.mpi');
+
+Route::get('/alumni/s1/bkpi', function () {
+    return view('alumni.s1.bkpi');
+})->name('alumni.s1.bkpi');
+
+Route::get('/alumni/s1/eksyar', function () {
+    return view('alumni.s1.eksyar');
+})->name('alumni.s1.eksyar');
+
+Route::get('/alumni/s1/as', function () {
+    return view('alumni.s1.as');
+})->name('alumni.s1.as');
+
+Route::get('/alumni/s1/htn', function () {
+    return view('alumni.s1.htn');
+})->name('alumni.s1.htn');
+
+// S2
+Route::get('/alumni/s2/pai', function () {
+    return view('alumni.s2.pai');
+})->name('alumni.s2.pai');
 
 // === CRUD + Tampilan Berita ===
 Route::get('/berita', [BeritaController::class, 'index'])->name('berita');
@@ -58,13 +102,6 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-
-// === CRUD lain ===
-Route::get('/alumni', [AlumniController::class, 'index']);
-Route::post('/alumni', [AlumniController::class, 'store']);
-Route::get('/alumni/{id}', [AlumniController::class, 'show']);
-Route::put('/alumni/{id}', [AlumniController::class, 'update']);
-Route::delete('/alumni/{id}', [AlumniController::class, 'destroy']);
 
 Route::get('/testimoni', [TestimoniController::class, 'index']);
 Route::post('/testimoni', [TestimoniController::class, 'store']);

@@ -10,8 +10,8 @@
             <h2 class="relative z-10 mx-w-4xl mx-auto">INSTITUT AGAMA ISLAM TASIKMALAYA</h2>
             <p class="mb-6">Temukan Teman Satu Angkatan, ikuti event serta bangun koneksi bersama Alumni!</p>
             <div class="flex justify-center gap-4">
-                <a href="#" class="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-2 rounded-lg shadow">Gabung Alumni</a>
-                <a href="#" class="bg-white hover:bg-gray-200 text-gray-800 px-6 py-2 rounded-lg shadow">Lihat Data Alumni</a>
+                <a href="/" class="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-2 rounded-lg shadow">Gabung Alumni</a>
+                <a href="{{ route('alumni.data') }}" class="bg-white hover:bg-gray-200 text-gray-800 px-6 py-2 rounded-lg shadow">Lihat Data Alumni</a>
             </div>
         </div>
     </section>
@@ -24,7 +24,7 @@
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore
                 et dolore magna aliqua.
             </p>
-            <a href="#" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg shadow">
+            <a href="{{ route('tentang') }}" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg shadow">
                 Selengkapnya...
             </a>
         </div>
@@ -86,7 +86,7 @@
                 @endfor
             </div>
             <div class="text-center mt-6">
-                <a href="#" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg shadow">
+                <a href="{{ route('berita') }}" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg shadow">
                     Baca Berita Lainnya
                 </a>
             </div>

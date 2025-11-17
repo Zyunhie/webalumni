@@ -4,14 +4,14 @@
 
             <!-- Logo -->
             <div class="flex-shrink-0 flex items-center">
-                <a href="{{ route('welcome') }}">
+                <a href="{{ route('dashboard') }}">
                     <img src="{{ asset('images/logo.png') }}" alt="Logo IAIT" class="h-10 w-auto">
                 </a>
             </div>
 
             <!-- Navigation Links -->
             <div class="hidden sm:flex sm:space-x-8 sm:mx-auto">
-                <a href="{{ route('welcome') }}" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium {{ request()->routeIs('welcome') ? 'border-white' : 'border-transparent' }}">Beranda</a>
+                <a href="{{ route('dashboard') }}" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium {{ request()->routeIs('dashboard') ? 'border-white' : 'border-transparent' }}">Beranda</a>
                 <a href="{{ route('tentang') }}" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium {{ request()->routeIs('tentang') ? 'border-white' : 'border-transparent' }}">Tentang</a>
 
                 <!-- Alumni Dropdown -->
