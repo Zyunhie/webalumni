@@ -29,7 +29,7 @@
                     </div>
                 </div>
 
-                <a href="{{ route('berita') }}" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium {{ request()->routeIs('berita') ? 'border-white' : 'border-transparent' }}">Berita</a>
+                <a href="{{ route('berita.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium {{ request()->routeIs('berita') ? 'border-white' : 'border-transparent' }}">Berita</a>
                 <a href="{{ route('kontak') }}" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium {{ request()->routeIs('kontak') ? 'border-white' : 'border-transparent' }}">Kontak</a>
             </div>
 

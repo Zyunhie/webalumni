@@ -7,75 +7,164 @@ use Illuminate\Http\Request;
 
 class AlumniController extends Controller
 {
-    // === INDEX: Menampilkan daftar alumni PGMI ===
-    public function pgmiIndex(Request $request)
-{
-    $angkatan = $request->get('angkatan');
-    $lulusan = $request->get('lulusan');
+    /**
+     * ===============================
+     * FRONTEND (USER & UMUM)
+     * ===============================
+     */
 
-    $query = Alumni::where('prodi', 'PGMI');
-
-    if ($angkatan && $angkatan !== 'all') {
-        $query->where('angkatan', $angkatan);
-    }
-
-    if ($lulusan && $lulusan !== 'all') {
-        $query->where('lulusan', $lulusan);
-    }
-
-    $alumni = $query->get();
-    $angkatanList = Alumni::where('prodi', 'PGMI')->select('angkatan')->distinct()->pluck('angkatan');
-    $lulusanList = Alumni::where('prodi', 'PGMI')->select('lulusan')->distinct()->pluck('lulusan');
-
-    return view('alumni.s1.prodi.pgmi.index', compact('alumni', 'angkatan', 'lulusan', 'angkatanList', 'lulusanList'));
-}
-
-    // === CREATE: Form tambah data alumni ===
-    public function createPgmi()
+    // LIST ALUMNI (HANYA APPROVED)
+    public function index(Request $request)
     {
-        return view('alumni.s1.pgmi.create');
+        $query = Alumni::where('status', 'approved');
+
+        if ($request->angkatan) {
+            $query->where('angkatan', $request->angkatan);
+        }
+
+        if ($request->lulusan) {
+            $query->where('lulusan', $request->lulusan);
+        }
+
+        $alumni = $query->get();
+
+        return view('alumni.index', compact('alumni'));
     }
 
-    // === STORE: Simpan data alumni baru ===
+    // FORM TAMBAH DATA (USER)
+    public function create()
+    {
+        return view('alumni.create');
+    }
+
+    // SIMPAN DATA (PENDING)
     public function store(Request $request)
     {
         $request->validate([
-            'nama' => 'required|string|max:100',
-            'nim' => 'nullable|string|max:20',
-            'prodi' => 'required|string|max:50',
-            'angkatan' => 'nullable|integer',
-            'lulusan' => 'nullable|integer',
-            'pekerjaan' => 'nullable|string|max:100',
-            'perusahaan' => 'nullable|string|max:100',
-            'email' => 'nullable|email|max:100',
-            'no_hp' => 'nullable|string|max:20',
-            'alamat' => 'nullable|string',
-            'foto' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
-            'ijazah' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
-            'transkrip_nilai' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
+            'nama' => 'required',
+            'prodi' => 'required',
         ]);
 
-        $data = $request->except(['foto', 'ijazah', 'transkrip_nilai']);
-
-        if ($request->hasFile('foto')) {
-            $data['foto'] = $request->file('foto')->store('uploads/foto', 'public');
-        }
-        if ($request->hasFile('ijazah')) {
-            $data['ijazah'] = $request->file('ijazah')->store('uploads/ijazah', 'public');
-        }
-        if ($request->hasFile('transkrip_nilai')) {
-            $data['transkrip_nilai'] = $request->file('transkrip_nilai')->store('uploads/transkrip', 'public');
-        }
+        $data = $request->all();
+        $data['user_id'] = auth()->id();
+        $data['status']  = 'pending';
 
         Alumni::create($data);
 
-        return redirect()->route('alumni.s1.pgmi')->with('success', 'Data alumni berhasil ditambahkan!');
+        return redirect()
+            ->route('alumni.index')
+            ->with('success', 'Data berhasil dikirim dan menunggu persetujuan admin');
     }
 
-    // === SHOW: Detail alumni ===
-    public function pgmiShow($id)
-{
-    $alumni = \App\Models\Alumni::findOrFail($id);
-    return view('alumni.s1.pgmi.show', compact('alumni'));
-}
+    // DETAIL (HANYA APPROVED ATAU MILIK SENDIRI)
+    public function show($id)
+    {
+        $alumni = Alumni::findOrFail($id);
+
+        if (
+            $alumni->status !== 'approved' &&
+            $alumni->user_id !== auth()->id()
+        ) {
+            abort(403);
+        }
+
+        return view('alumni.show', compact('alumni'));
+    }
+
+    /**
+     * ===============================
+     * EDIT OLEH USER
+     * ===============================
+     */
+
+    public function edit($id)
+    {
+        $alumni = Alumni::findOrFail($id);
+
+        if ($alumni->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        return view('alumni.edit', compact('alumni'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $alumni = Alumni::findOrFail($id);
+
+        if ($alumni->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $alumni->update([
+            'nama'        => $request->nama,
+            'pekerjaan'   => $request->pekerjaan,
+            'perusahaan'  => $request->perusahaan,
+            'alamat'      => $request->alamat,
+
+            // ⬇️ KUNCI KONSEP KAMU
+            'status'      => 'pending',
+            'approved_by' => null,
+            'approved_at' => null,
+        ]);
+
+        return back()->with(
+            'success',
+            'Perubahan disimpan dan menunggu verifikasi admin'
+        );
+    }
+
+    /**
+     * ===============================
+     * ADMIN AREA (TAMBAHAN FITUR)
+     * ===============================
+     */
+
+    // LIST DATA PENDING
+    public function pending()
+    {
+        if (auth()->user()->role !== 'admin') {
+            abort(403);
+        }
+
+        $alumni = Alumni::where('status', 'pending')->get();
+
+        return view('admin.alumni.pending', compact('alumni'));
+    }
+
+    // APPROVE
+    public function approve($id)
+    {
+        if (auth()->user()->role !== 'admin') {
+            abort(403);
+        }
+
+        $alumni = Alumni::findOrFail($id);
+
+        $alumni->update([
+            'status'      => 'approved',
+            'approved_by' => auth()->id(),
+            'approved_at' => now(),
+        ]);
+
+        return back()->with('success', 'Data alumni disetujui');
+    }
+
+    // REJECT
+    public function reject($id)
+    {
+        if (auth()->user()->role !== 'admin') {
+            abort(403);
+        }
+
+        $alumni = Alumni::findOrFail($id);
+
+        $alumni->update([
+            'status'      => 'rejected',
+            'approved_by' => auth()->id(),
+            'approved_at' => now(),
+        ]);
+
+        return back()->with('error', 'Data alumni ditolak');
+    }
 }

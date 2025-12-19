@@ -86,7 +86,7 @@
                 @endfor
             </div>
             <div class="text-center mt-6">
-                <a href="{{ route('berita') }}" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg shadow">
+                <a href="{{ route('berita.index') }}" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg shadow">
                     Baca Berita Lainnya
                 </a>
             </div>

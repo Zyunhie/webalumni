@@ -16,7 +16,7 @@ class LowonganController extends Controller
         $showAll = $request->query('all') == 1;
 
         // Ambil semua lowongan dari database, urut berdasarkan tanggal_post (pastikan kolom ada)
-        $lowongan = Lowongan::orderBy('tanggal_post', 'desc')->get();
+        $lowongan = Lowongan::orderByRaw('COALESCE(tanggal_posting, created_at) DESC')->get();
 
         return view('lowongan.index', compact('lowongan', 'showAll'));
     }
