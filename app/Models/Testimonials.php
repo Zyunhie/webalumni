@@ -2,28 +2,28 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Testimoni extends Model
+class Testimonials extends Model
 {
-    use HasFactory;
-
-    protected $table = 'testimoni';
     protected $fillable = [
         'nama',
-        'angkatan',
+        'jurusan',
+        'tahun_lulus',
         'pekerjaan',
-        'pesan',
+        'perusahaan',
         'foto',
-        'user_id',
+        'isi_testimoni',
         'status',
+        'alasan_penolakan',
+        'user_id',
         'approved_by',
         'approved_at',
     ];
 
     protected $casts = [
         'approved_at' => 'datetime',
+        'tahun_lulus' => 'integer',
     ];
 
     public function user()
@@ -41,4 +41,13 @@ class Testimoni extends Model
         return $query->where('status', 'approved');
     }
 
+    public function scopePending($query)
+    {
+        return $query->where('status', 'pending');
+    }
+
+    public function scopeMyTestimonials($query)
+    {
+        return $query->where('user_id', auth()->id());
+    }
 }

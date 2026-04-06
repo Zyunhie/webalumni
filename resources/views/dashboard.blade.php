@@ -6,13 +6,9 @@
         style="background-image: url('{{ asset('images/Branda.jpg') }}');">
         <div class="absolute inset-0 bg-black bg-opacity-50"></div>
         <div class="relative z-10 max-w-4xl mx-auto">
-            <h1 class="text-3xl md:text-5xl font-bold mb-4">SELAMAT DATANG DI WEBSITE ALUMNI </h1>
-            <h2 class="relative z-10 mx-w-4xl mx-auto">INSTITUT AGAMA ISLAM TASIKMALAYA</h2>
-            <p class="mb-6">Temukan Teman Satu Angkatan, ikuti event serta bangun koneksi bersama Alumni!</p>
-            <div class="flex justify-center gap-4">
-                <a href="/" class="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-2 rounded-lg shadow">Gabung Alumni</a>
-                <a href="{{ route('alumni.data') }}" class="bg-white hover:bg-gray-200 text-gray-800 px-6 py-2 rounded-lg shadow">Lihat Data Alumni</a>
-            </div>
+            <h1 class="text-3xl md:text-5xl font-bold mb-4">SELAMAT DATANG DI WEBSITE ALUMNI</h1>
+            <h2 class="relative z-10 max-w-4xl mx-auto">INSTITUT AGAMA ISLAM TASIKMALAYA</h2>
+            <p class="mb-6">Temukan teman satu angkatan, ikuti event serta bangun koneksi bersama Alumni!</p>
         </div>
     </section>
 
@@ -24,9 +20,17 @@
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore
                 et dolore magna aliqua.
             </p>
-            <a href="{{ route('tentang') }}" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg shadow">
-                Selengkapnya...
-            </a>
+            @guest
+                <a href="{{ route('login') }}"
+                    class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg shadow">
+                    Selengkapnya...
+                </a>
+            @else
+                <a href="{{ route('tentang') }}"
+                    class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg shadow">
+                    Selengkapnya...
+                </a>
+            @endguest
         </div>
     </section>
 
@@ -53,16 +57,26 @@
         <div class="max-w-6xl mx-auto px-4">
             <h2 class="text-2xl font-bold mb-6">Agenda</h2>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                @for ($i = 0; $i < 3; $i++)
+                @foreach(App\Models\Agenda::latest()->take(3)->get() as $agenda)
                     <div class="bg-white shadow rounded-lg overflow-hidden">
-                        <img src="{{ asset('images/L.jpeg') }}" alt="Agenda" class="w-full h-40 object-cover">
+                        <img src="{{ $agenda->gambar ? asset('storage/' . $agenda->gambar) : asset('images/L.jpeg') }}" 
+                             alt="Agenda" class="w-full h-40 object-cover">
                         <div class="p-4">
-                            <h3 class="font-bold text-lg mb-2">Seminar Event</h3>
-                            <p class="text-sm text-gray-600">Nov 27, 2025 - 09:00 AM</p>
-                            <p class="mt-2 text-gray-600">Kegiatan seminar untuk alumni dalam rangka silaturahmi...</p>
+                            <h3 class="font-bold text-lg mb-2">{{ $agenda->judul }}</h3>
+                            <p class="text-sm text-gray-600">{{ \Carbon\Carbon::parse($agenda->tanggal_mulai)->format('d M Y') }} 
+                                @if($agenda->tanggal_selesai) - {{ \Carbon\Carbon::parse($agenda->tanggal_selesai)->format('d M Y') }} @endif
+                            </p>
+                            <p class="mt-2 text-gray-600 text-sm">{{ Str::limit($agenda->deskripsi, 60) }}</p>
+                            @guest
+                                <a href="{{ route('login') }}"
+                                   class="text-orange-500 hover:underline text-sm mt-2 inline-block">Selengkapnya...</a>
+                            @else
+                                <a href="{{ route('agenda.index') }}"
+                                   class="text-orange-500 hover:underline text-sm mt-2 inline-block">Selengkapnya...</a>
+                            @endguest
                         </div>
                     </div>
-                @endfor
+                @endforeach
             </div>
         </div>
     </section>
@@ -70,25 +84,39 @@
     {{-- Berita Terbaru --}}
     <section class="py-12 bg-gray-100">
         <div class="max-w-6xl mx-auto px-4">
-            <h2 class="text-2xl font-bold mb-6">Informasi Dan Berita Terbaru</h2>
+            <h2 class="text-2xl font-bold mb-6">Informasi dan Berita Terbaru</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                @for ($i = 0; $i < 2; $i++)
+                @foreach(App\Models\Berita::latest()->take(2)->get() as $berita)
                     <div class="bg-white shadow rounded-lg overflow-hidden">
-                        <img src="{{ asset('images/L.jpeg') }}" alt="Berita" class="w-full h-40 object-cover">
+                        <img src="{{ $berita->gambar ? asset('storage/' . $berita->gambar) : asset('images/L.jpeg') }}" 
+                             alt="Berita" class="w-full h-40 object-cover">
                         <div class="p-4">
-                            <p class="text-sm text-green-600 font-semibold mb-2">14 SEP 2025</p>
-                            <h3 class="font-bold text-lg mb-2">Pengambilan Foto Alumni Peserta Wisuda 2024 - 2025</h3>
-                            <p class="text-gray-600 text-sm">
-                                Pengambilan foto alumni peserta wisuda tahun akademik 2024–2025 telah dilaksanakan...
-                            </p>
+                            <p class="text-sm text-green-600 font-semibold mb-2">{{ \Carbon\Carbon::parse($berita->tanggal)->format('d M Y') }}</p>
+                            <h3 class="font-bold text-lg mb-2">{{ $berita->judul }}</h3>
+                            <p class="text-gray-600 text-sm">{{ Str::limit($berita->isi, 60) }}</p>
+                            @guest
+                                <a href="{{ route('login') }}"
+                                   class="text-orange-500 hover:underline text-sm mt-2 inline-block">Baca Selengkapnya...</a>
+                            @else
+                                <a href="{{ route('berita.show', $berita->id) }}"
+                                   class="text-orange-500 hover:underline text-sm mt-2 inline-block">Baca Selengkapnya...</a>
+                            @endguest
                         </div>
                     </div>
-                @endfor
+                @endforeach
             </div>
             <div class="text-center mt-6">
-                <a href="{{ route('berita.index') }}" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg shadow">
-                    Baca Berita Lainnya
-                </a>
+                @guest
+                    <a href="{{ route('login') }}"
+                       class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg shadow">
+                       Baca Berita Lainnya
+                    </a>
+                @else
+                    <a href="{{ route('berita.index') }}"
+                       class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg shadow">
+                       Baca Berita Lainnya
+                    </a>
+                @endguest
             </div>
         </div>
     </section>

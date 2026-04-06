@@ -7,12 +7,21 @@ use Illuminate\Http\Request;
 
 class AgendaController extends Controller
 {
+    // Constructor untuk menambahkan middleware auth hanya pada method tertentu
+    public function __construct()
+    {
+        // Hanya user yang login boleh akses create, update, delete, show detail
+        $this->middleware('auth')->except(['index']);
+    }
+
+    // Menampilkan semua agenda (read-only, bisa diakses semua orang)
     public function index()
     {
         $agenda = Agenda::all();
         return response()->json($agenda);
     }
 
+    // Menambahkan agenda (harus login)
     public function store(Request $request)
     {
         $request->validate([
@@ -28,12 +37,14 @@ class AgendaController extends Controller
         return response()->json(['message' => 'Agenda berhasil ditambahkan', 'data' => $agenda]);
     }
 
+    // Menampilkan detail agenda (harus login)
     public function show($id)
     {
         $agenda = Agenda::findOrFail($id);
         return response()->json($agenda);
     }
 
+    // Update agenda (harus login)
     public function update(Request $request, $id)
     {
         $agenda = Agenda::findOrFail($id);
@@ -41,6 +52,7 @@ class AgendaController extends Controller
         return response()->json(['message' => 'Agenda berhasil diperbarui', 'data' => $agenda]);
     }
 
+    // Hapus agenda (harus login)
     public function destroy($id)
     {
         $agenda = Agenda::findOrFail($id);

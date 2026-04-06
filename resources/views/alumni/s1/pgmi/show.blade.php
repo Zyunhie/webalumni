@@ -3,7 +3,7 @@
 @section('content')
 <section class="max-w-3xl mx-auto px-6 py-12">
     <div class="bg-white rounded-2xl shadow-lg p-8 text-center">
-        <img src="{{ asset($alumni->foto ?? 'images/default.png') }}" 
+        <img src="{{ $alumni->foto_url }}" 
              alt="{{ $alumni->nama }}" class="w-32 h-32 rounded-full mx-auto mb-4 object-cover">
         <h2 class="text-2xl font-bold text-green-700 mb-1">{{ $alumni->nama }}</h2>
         <p class="text-gray-500 mb-6">{{ $alumni->prodi }} - Angkatan {{ $alumni->angkatan ?? '-' }}</p>

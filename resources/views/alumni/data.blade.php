@@ -33,11 +33,11 @@
                 <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
                     <h4 class="font-bold text-green-700">Fakultas Tarbiyah</h4>
                     <ul class="ml-5 mt-2 list-disc text-gray-700 space-y-1">
-                        <li><a href="{{ route('alumni.s1.pai') }}" class="hover:underline">Pendidikan Agama Islam (PAI)</a></li>
+                        <li><a href="{{ route('alumni.s1.pai.index') }}" class="hover:underline">Pendidikan Agama Islam (PAI)</a></li>
                         <li><a href="{{ route('alumni.s1.pgmi.index') }}" class="hover:underline">Pendidikan Guru Madrasah Ibtidaiyah (PGMI)</a></li>
-                        <li><a href="{{ route('alumni.s1.piaud') }}" class="hover:underline">Pendidikan Islam Anak Usia Dini (PIAUD)</a></li>
-                        <li><a href="{{ route('alumni.s1.mpi') }}" class="hover:underline">Manajemen Pendidikan Islam (MPI)</a></li>
-                        <li><a href="{{ route('alumni.s1.bkpi') }}" class="hover:underline">Bimbingan dan Konseling Pendidikan Islam (BKPI)</a></li>
+                        <li><a href="{{ route('alumni.s1.piaud.index') }}" class="hover:underline">Pendidikan Islam Anak Usia Dini (PIAUD)</a></li>
+                        <li><a href="{{ route('alumni.s1.mpi.index') }}" class="hover:underline">Manajemen Pendidikan Islam (MPI)</a></li>
+                        <li><a href="{{ route('alumni.s1.bkpi.index') }}" class="hover:underline">Bimbingan dan Konseling Pendidikan Islam (BKPI)</a></li>
                     </ul>
                 </div>
 
@@ -45,7 +45,7 @@
                 <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
                     <h4 class="font-bold text-green-700">Fakultas Ekonomi & Bisnis Islam</h4>
                     <ul class="ml-5 mt-2 list-disc text-gray-700 space-y-1">
-                        <li><a href="{{ route('alumni.s1.eksyar') }}" class="hover:underline">Ekonomi Syari’ah (Eksyar)</a></li>
+                        <li><a href="{{ route('alumni.s1.eksyar.index') }}" class="hover:underline">Ekonomi Syari'ah (Eksyar)</a></li>
                     </ul>
                 </div>
 
@@ -53,8 +53,8 @@
                 <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
                     <h4 class="font-bold text-green-700">Fakultas Syariah & Hukum</h4>
                     <ul class="ml-5 mt-2 list-disc text-gray-700 space-y-1">
-                        <li><a href="{{ route('alumni.s1.as') }}" class="hover:underline">Hukum Keluarga Islam (AS)</a></li>
-                        <li><a href="{{ route('alumni.s1.htn') }}" class="hover:underline">Hukum Tata Negara (HTN)</a></li>
+                        <li><a href="{{ route('alumni.s1.as.index') }}" class="hover:underline">Hukum Keluarga Islam (AS)</a></li>
+                        <li><a href="{{ route('alumni.s1.htn.index') }}" class="hover:underline">Hukum Tata Negara (HTN)</a></li>
                     </ul>
                 </div>
 
@@ -71,7 +71,7 @@
 
             <div id="fakultasS2" class="hidden mt-6 bg-gray-50 p-4 rounded-lg shadow-sm text-left">
                 <ul class="ml-5 list-disc text-gray-700 space-y-1">
-                    <li><a href="{{ route('alumni.s2.pai') }}" class="hover:underline">Pendidikan Agama Islam (PAI)</a></li>
+                    <li><a href="{{ route('alumni.s2.pai.index') }}" class="hover:underline">Pendidikan Agama Islam (PAI)</a></li>
                 </ul>
             </div>
         </div>
@@ -86,3 +86,4 @@ function toggleMenu(id) {
 </script>
 
 @endsection
+

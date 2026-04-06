@@ -9,7 +9,17 @@ use Illuminate\Support\Facades\Storage;
 class BeritaController extends Controller
 {
     /**
-     * Tampilkan semua berita di halaman utama
+     * Constructor untuk menambahkan middleware auth
+     */
+    public function __construct()
+    {
+        // Hanya method index yang bisa diakses semua orang
+        // Method lainnya (show, store, update, destroy) harus login
+        $this->middleware('auth')->except(['index']);
+    }
+
+    /**
+     * Tampilkan semua berita di halaman utama (bisa diakses publik)
      */
     public function index()
     {
@@ -18,7 +28,7 @@ class BeritaController extends Controller
     }
 
     /**
-     * Simpan berita baru
+     * Simpan berita baru (harus login)
      */
     public function store(Request $request)
     {
@@ -43,23 +53,23 @@ class BeritaController extends Controller
     }
 
     /**
-     * Detail satu berita
+     * Detail satu berita (harus login)
      */
     public function show($id)
-{
-    $berita = Berita::findOrFail($id);
+    {
+        $berita = Berita::findOrFail($id);
 
-    // ambil 3 berita lain untuk bagian "Berita Lainnya"
-    $lainnya = Berita::where('id', '!=', $id)
-                ->latest()
-                ->take(3)
-                ->get();
+        // ambil 3 berita lain untuk bagian "Berita Lainnya"
+        $lainnya = Berita::where('id', '!=', $id)
+                    ->latest()
+                    ->take(3)
+                    ->get();
 
-    return view('berita.show', compact('berita', 'lainnya'));
-}
+        return view('berita.show', compact('berita', 'lainnya'));
+    }
 
     /**
-     * Update berita
+     * Update berita (harus login)
      */
     public function update(Request $request, $id)
     {
@@ -86,7 +96,7 @@ class BeritaController extends Controller
     }
 
     /**
-     * Hapus berita
+     * Hapus berita (harus login)
      */
     public function destroy($id)
     {
