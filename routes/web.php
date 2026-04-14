@@ -10,6 +10,7 @@ use App\Http\Controllers\LowonganController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\AboutController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\KontakController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,7 +25,8 @@ Route::get('/', function () {
 
 // Tentang & Kontak
 Route::get('/tentang', [AboutController::class, 'index'])->name('tentang');
-Route::view('/kontak', 'kontak')->name('kontak');
+Route::get('/kontak', [KontakController::class, 'index'])->name('kontak');
+Route::post('/kontak', [KontakController::class, 'store'])->name('kontak.store');
 
 /*
 |--------------------------------------------------------------------------
@@ -34,7 +36,13 @@ Route::view('/kontak', 'kontak')->name('kontak');
 
 Route::view('/alumni/data', 'alumni.data')->name('alumni.data');
 Route::view('/alumni/testimoni', 'alumni.testimoni')->name('alumni.testimoni');
-Route::view('/alumni/agenda', 'alumni.agenda')->name('alumni.agenda');
+Route::get('/alumni/agenda', [AgendaController::class, 'index'])->name('alumni.agenda');
+Route::get('/alumni/agenda/{agenda}', [AgendaController::class, 'show'])->name('alumni.agenda.show')->middleware('auth');
+Route::get('/alumni/agenda/{agenda}/edit', [AgendaController::class, 'edit'])->name('alumni.agenda.edit')->middleware('auth');
+Route::put('/alumni/agenda/{agenda}', [AgendaController::class, 'update'])->name('alumni.agenda.update')->middleware('auth');
+Route::delete('/alumni/agenda/{agenda}', [AgendaController::class, 'destroy'])->name('alumni.agenda.destroy')->middleware('auth');
+Route::post('/alumni/agenda', [AgendaController::class, 'store'])->name('alumni.agenda.store')->middleware('auth');
+Route::delete('/alumni/agenda/destroy-all', [AgendaController::class, 'destroyAll'])->name('agenda.destroyAll')->middleware('auth');
 
 // Testimoni Routes (Unified)
 Route::get('/testimoni', [TestimoniController::class, 'index'])->name('testimoni.index');
@@ -72,6 +80,8 @@ Route::prefix('alumni/s1/pgmi')
         Route::get('/{id}/edit', [AlumniController::class, 'edit'])->name('edit');
         Route::put('/{id}', [AlumniController::class, 'update'])->name('update');
         Route::delete('/{id}', [AlumniController::class, 'destroy'])->name('destroy');
+        Route::get('/{id}/upload', [AlumniController::class, 'uploadForm'])->name('upload');
+        Route::post('/{id}/upload', [AlumniController::class, 'uploadFile'])->name('upload.store');
     });
 
 // Rute untuk PAI (S1)
@@ -85,6 +95,8 @@ Route::prefix('alumni/s1/pai')
         Route::get('/{id}/edit', [AlumniController::class, 'edit'])->name('edit');
         Route::put('/{id}', [AlumniController::class, 'update'])->name('update');
         Route::delete('/{id}', [AlumniController::class, 'destroy'])->name('destroy');
+        Route::get('/{id}/upload', [AlumniController::class, 'uploadForm'])->name('upload');
+        Route::post('/{id}/upload', [AlumniController::class, 'uploadFile'])->name('upload.store');
     });
 
 // Rute untuk PIAUD (S1)
@@ -98,6 +110,8 @@ Route::prefix('alumni/s1/piaud')
         Route::get('/{id}/edit', [AlumniController::class, 'edit'])->name('edit');
         Route::put('/{id}', [AlumniController::class, 'update'])->name('update');
         Route::delete('/{id}', [AlumniController::class, 'destroy'])->name('destroy');
+        Route::get('/{id}/upload', [AlumniController::class, 'uploadForm'])->name('upload');
+        Route::post('/{id}/upload', [AlumniController::class, 'uploadFile'])->name('upload.store');
     });
 
 // Rute untuk MPI (S1)
@@ -111,6 +125,8 @@ Route::prefix('alumni/s1/mpi')
         Route::get('/{id}/edit', [AlumniController::class, 'edit'])->name('edit');
         Route::put('/{id}', [AlumniController::class, 'update'])->name('update');
         Route::delete('/{id}', [AlumniController::class, 'destroy'])->name('destroy');
+        Route::get('/{id}/upload', [AlumniController::class, 'uploadForm'])->name('upload');
+        Route::post('/{id}/upload', [AlumniController::class, 'uploadFile'])->name('upload.store');
     });
 
 // Rute untuk BKPI (S1)
@@ -124,6 +140,8 @@ Route::prefix('alumni/s1/bkpi')
         Route::get('/{id}/edit', [AlumniController::class, 'edit'])->name('edit');
         Route::put('/{id}', [AlumniController::class, 'update'])->name('update');
         Route::delete('/{id}', [AlumniController::class, 'destroy'])->name('destroy');
+        Route::get('/{id}/upload', [AlumniController::class, 'uploadForm'])->name('upload');
+        Route::post('/{id}/upload', [AlumniController::class, 'uploadFile'])->name('upload.store');
     });
 
 // Rute untuk EKSYAR (S1)
@@ -137,6 +155,8 @@ Route::prefix('alumni/s1/eksyar')
         Route::get('/{id}/edit', [AlumniController::class, 'edit'])->name('edit');
         Route::put('/{id}', [AlumniController::class, 'update'])->name('update');
         Route::delete('/{id}', [AlumniController::class, 'destroy'])->name('destroy');
+        Route::get('/{id}/upload', [AlumniController::class, 'uploadForm'])->name('upload');
+        Route::post('/{id}/upload', [AlumniController::class, 'uploadFile'])->name('upload.store');
     });
 
 // Rute untuk AS (Hukum Keluarga Islam) (S1)
@@ -150,6 +170,8 @@ Route::prefix('alumni/s1/as')
         Route::get('/{id}/edit', [AlumniController::class, 'edit'])->name('edit');
         Route::put('/{id}', [AlumniController::class, 'update'])->name('update');
         Route::delete('/{id}', [AlumniController::class, 'destroy'])->name('destroy');
+        Route::get('/{id}/upload', [AlumniController::class, 'uploadForm'])->name('upload');
+        Route::post('/{id}/upload', [AlumniController::class, 'uploadFile'])->name('upload.store');
     });
 
 // Rute untuk HTN (Hukum Tata Negara) (S1)
@@ -163,6 +185,8 @@ Route::prefix('alumni/s1/htn')
         Route::get('/{id}/edit', [AlumniController::class, 'edit'])->name('edit');
         Route::put('/{id}', [AlumniController::class, 'update'])->name('update');
         Route::delete('/{id}', [AlumniController::class, 'destroy'])->name('destroy');
+        Route::get('/{id}/upload', [AlumniController::class, 'uploadForm'])->name('upload');
+        Route::post('/{id}/upload', [AlumniController::class, 'uploadFile'])->name('upload.store');
     });
 
 // Rute untuk S2 PAI
@@ -176,14 +200,9 @@ Route::prefix('alumni/s2/pai')
         Route::get('/{id}/edit', [AlumniController::class, 'edit'])->name('edit');
         Route::put('/{id}', [AlumniController::class, 'update'])->name('update');
         Route::delete('/{id}', [AlumniController::class, 'destroy'])->name('destroy');
+        Route::get('/{id}/upload', [AlumniController::class, 'uploadForm'])->name('upload');
+        Route::post('/{id}/upload', [AlumniController::class, 'uploadFile'])->name('upload.store');
     });
-
-/*
-|--------------------------------------------------------------------------
-| ALUMNI STATIC (BACKWARD COMPATIBILITY - TIDAK DIGUNAKAN LAGI)
-|--------------------------------------------------------------------------
-*/
-// File-file ini sudah tidak digunakan, menggunakan route dynamic di atas
 
 /*
 |--------------------------------------------------------------------------
@@ -210,14 +229,12 @@ Route::get('/berita/{id}', [BeritaController::class, 'show'])
 // Agenda
 Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda.index');
 
-// Testimonials Routes (Public)
-// Testimonials routes removed - unified to Testimoni system
-
 // Lowongan
 Route::get('/lowongan', [LowonganController::class, 'index'])->name('lowongan.index');
-Route::get('/lowongan/{id}', [LowonganController::class, 'show'])
-    ->middleware('auth')
-    ->name('lowongan.show');
+Route::get('/lowongan/{lowongan}', [LowonganController::class, 'show'])->name('lowongan.show');
+Route::post('/lowongan/{lowongan}/lamar', [LowonganController::class, 'lamar'])->middleware('auth')->name('lowongan.lamar');
+Route::get('/dashboard/lowongan', [LowonganController::class, 'dashboard'])->middleware('auth')->name('lowongan.dashboard');
+
 
 /*
 |--------------------------------------------------------------------------
@@ -231,7 +248,8 @@ Route::middleware('auth')->group(function () {
         return view('dashboard');
     })->name('dashboard');
 
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::get('/profile', [AlumniController::class, 'profile'])->name('profile');
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
@@ -272,20 +290,33 @@ Route::middleware(['auth', 'role:admin'])
         // User Management
         Route::resource('/users', UserController::class);
 
-        /*
-        |--------------------------------------------------------------------------
-        | TENTANG (ADMIN)
-        |--------------------------------------------------------------------------
-        */
+        // Berita Admin CRUD
+        Route::get('berita', [BeritaController::class, 'adminIndex'])->name('berita.index');
+        Route::get('berita/create', [BeritaController::class, 'create'])->name('berita.create');
+        Route::post('berita', [BeritaController::class, 'store'])->name('berita.store');
+        Route::get('berita/{berita}/edit', [BeritaController::class, 'edit'])->name('berita.edit');
+        Route::put('berita/{berita}', [BeritaController::class, 'update'])->name('berita.update');
+        Route::delete('berita/{berita}', [BeritaController::class, 'destroy'])->name('berita.destroy');
 
-        // Update Visi / Misi (AJAX - JSON)
+        // Tentang Admin
         Route::post('/tentang/update-text', [AboutController::class, 'updateText'])
             ->name('tentang.update.text');
-
-        // Update Struktur Kampus (FORM UPLOAD)
         Route::post('/tentang/update-image', [AboutController::class, 'updateImage'])
             ->name('tentang.update.image');
+        
+        // Lowongan Kerja Admin
+        Route::resource('lowongan', \App\Http\Controllers\Admin\LowonganController::class)->except(['destroy']);
+        Route::post('lowongan/{lowongan}/approve', [\App\Http\Controllers\Admin\LowonganController::class, 'approve'])->name('lowongan.approve');
+        Route::post('lowongan/{lowongan}/reject', [\App\Http\Controllers\Admin\LowonganController::class, 'reject'])->name('lowongan.reject');
+        Route::post('lowongan/{lowongan}/notify', [\App\Http\Controllers\Admin\LowonganController::class, 'sendNotification'])->name('lowongan.notify');
+
+        // Kelola Pesan Kontak
+        Route::get('/kontak', [KontakController::class, 'adminIndex'])->name('kontak.index');
+        Route::post('/kontak/{pesan}/read', [KontakController::class, 'markAsRead'])->name('kontak.read');
+        Route::delete('/kontak/{pesan}', [KontakController::class, 'destroy'])->name('kontak.destroy');
+        Route::post('/kontak/mark-all-read', [KontakController::class, 'markAllAsRead'])->name('kontak.markAllRead');
     });
+
 
 /*
 |--------------------------------------------------------------------------

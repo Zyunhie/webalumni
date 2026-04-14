@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Agenda;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class AgendaController extends Controller
 {
@@ -17,8 +18,8 @@ class AgendaController extends Controller
     // Menampilkan semua agenda (read-only, bisa diakses semua orang)
     public function index()
     {
-        $agenda = Agenda::all();
-        return response()->json($agenda);
+        $agendas = Agenda::orderBy('tanggal_mulai', 'asc')->get();
+        return view('alumni.agenda', compact('agendas'));
     }
 
     // Menambahkan agenda (harus login)
@@ -28,13 +29,55 @@ class AgendaController extends Controller
             'judul' => 'required|string|max:150',
             'deskripsi' => 'required|string',
             'tanggal_mulai' => 'required|date',
-            'tanggal_selesai' => 'nullable|date',
+            'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
             'lokasi' => 'nullable|string|max:150',
-            'gambar' => 'nullable|string|max:255',
         ]);
 
-        $agenda = Agenda::create($request->all());
-        return response()->json(['message' => 'Agenda berhasil ditambahkan', 'data' => $agenda]);
+        $agendaData = $request->all();
+        if ($request->hasFile('gambar')) {
+            $agendaData['gambar'] = $request->file('gambar')->store('agendas', 'public');
+        }
+
+        $agenda = Agenda::create($agendaData);
+        return redirect()->route('alumni.agenda')->with('success', 'Agenda berhasil ditambahkan!');
+    }
+
+    public function destroyAll()
+    {
+        Agenda::truncate();
+        return redirect()->route('alumni.agenda')->with('success', 'Semua agenda berhasil dihapus!');
+    }
+
+    // Menampilkan detail agenda untuk edit
+    public function edit($id)
+    {
+        $agenda = Agenda::findOrFail($id);
+        return view('alumni.agenda', compact('agenda'));
+    }
+
+    // Update agenda
+    public function update(Request $request, $id)
+    {
+        $agenda = Agenda::findOrFail($id);
+        
+        $request->validate([
+            'judul' => 'required|string|max:150',
+            'deskripsi' => 'required|string',
+            'tanggal_mulai' => 'required|date',
+            'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
+            'lokasi' => 'nullable|string|max:150',
+        ]);
+
+        $agendaData = $request->all();
+        if ($request->hasFile('gambar')) {
+            if ($agenda->gambar) {
+                Storage::disk('public')->delete($agenda->gambar);
+            }
+            $agendaData['gambar'] = $request->file('gambar')->store('agendas', 'public');
+        }
+
+        $agenda->update($agendaData);
+        return redirect()->route('alumni.agenda')->with('success', 'Agenda berhasil diupdate!');
     }
 
     // Menampilkan detail agenda (harus login)
@@ -44,19 +87,16 @@ class AgendaController extends Controller
         return response()->json($agenda);
     }
 
-    // Update agenda (harus login)
-    public function update(Request $request, $id)
-    {
-        $agenda = Agenda::findOrFail($id);
-        $agenda->update($request->all());
-        return response()->json(['message' => 'Agenda berhasil diperbarui', 'data' => $agenda]);
-    }
+
 
     // Hapus agenda (harus login)
     public function destroy($id)
     {
         $agenda = Agenda::findOrFail($id);
+        if ($agenda->gambar) {
+            Storage::disk('public')->delete($agenda->gambar);
+        }
         $agenda->delete();
-        return response()->json(['message' => 'Agenda berhasil dihapus']);
+        return redirect()->route('alumni.agenda')->with('success', 'Agenda berhasil dihapus!');
     }
 }

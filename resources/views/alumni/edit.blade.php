@@ -36,7 +36,7 @@
         @method('PUT')
 
         <div>
-            <label class="block text-sm font-semibold mb-1">Nama</label>
+            <label class="block text-sm font-semibold mb-1">Nama Lengkap</label>
             <input type="text" name="nama" value="{{ old('nama', $alumni->nama) }}" class="w-full border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" required>
         </div>
 

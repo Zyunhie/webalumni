@@ -1,12 +1,11 @@
-# TODO Testimoni Fixed ✅
+# TODO: Ganti Tombol Tambah Data jadi Kembali di Halaman Data Alumni Prodi
 
-Semua error testimoni sudah diperbaiki:
-- Unified Testimoni & Testimonials ke Testimoni system
-- Routes dibersihkan
-- Views di-fix field compatibility
-- Controller validation updated
-- Migration baru untuk fields tambahan
-- Test /testimoni sekarang work tanpa error
+## Status: Belum dimulai
 
-**Next**: Jalankan `php artisan migrate` (fix table name if needed), test fitur create/approve.
-
+### Langkah-langkah:
+1. [x] List semua file prodi detail di s1/ dan s2/ menggunakan list_files recursive
+2. [x] Baca contoh file tambahan untuk konfirmasi exact string tombol tambah
+3. [ ] Edit semua file prodi: ganti blok tombol "+ Tambah Alumni" jadi tombol kembali ke alumni.data 
+4. [ ] Update TODO.md tandai selesai edit file
+5. [ ] Test: jalankan php artisan serve, login admin/alumni, navigasi ke halaman prodi, cek tombol berubah
+6. [ ] [ ] Complete task dengan attempt_completion

@@ -8,28 +8,33 @@ use Illuminate\Support\Facades\Storage;
 
 class BeritaController extends Controller
 {
-    /**
-     * Constructor untuk menambahkan middleware auth
-     */
     public function __construct()
     {
-        // Hanya method index yang bisa diakses semua orang
-        // Method lainnya (show, store, update, destroy) harus login
-        $this->middleware('auth')->except(['index']);
+        $this->middleware('auth');
+        $this->middleware('role:admin')->except(['index', 'show']);
     }
 
-    /**
-     * Tampilkan semua berita di halaman utama (bisa diakses publik)
-     */
+    // Halaman publik daftar berita
     public function index()
     {
-        $berita = Berita::orderBy('tanggal', 'desc')->get();
+        $berita = Berita::orderBy('tanggal', 'desc')->paginate(10);
         return view('berita.index', compact('berita'));
     }
 
-    /**
-     * Simpan berita baru (harus login)
-     */
+    // Halaman admin daftar berita
+    public function adminIndex()
+    {
+        $berita = Berita::orderBy('tanggal', 'desc')->paginate(15);
+        return view('admin.berita.index', compact('berita'));
+    }
+
+    // Halaman form tambah berita (admin)
+    public function create()
+    {
+        return view('admin.berita.create');
+    }
+
+    // Simpan berita baru
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -39,38 +44,37 @@ class BeritaController extends Controller
             'tanggal' => 'nullable|date',
         ]);
 
-        // simpan gambar kalau ada
         if ($request->hasFile('gambar')) {
             $validated['gambar'] = $request->file('gambar')->store('berita', 'public');
         }
 
-        // kalau tanggal kosong, isi otomatis dengan tanggal hari ini
         $validated['tanggal'] = $validated['tanggal'] ?? now();
 
         Berita::create($validated);
 
-        return redirect()->back()->with('success', '✅ Berita berhasil ditambahkan!');
+        return redirect()->route('admin.berita.index')->with('success', '✅ Berita berhasil ditambahkan!');
     }
 
-    /**
-     * Detail satu berita (harus login)
-     */
+    // Detail satu berita (publik)
     public function show($id)
     {
         $berita = Berita::findOrFail($id);
-
-        // ambil 3 berita lain untuk bagian "Berita Lainnya"
         $lainnya = Berita::where('id', '!=', $id)
-                    ->latest()
+                    ->latest('tanggal')
                     ->take(3)
                     ->get();
 
         return view('berita.show', compact('berita', 'lainnya'));
     }
 
-    /**
-     * Update berita (harus login)
-     */
+    // Halaman form edit berita (admin)
+    public function edit($id)
+    {
+        $berita = Berita::findOrFail($id);
+        return view('admin.berita.edit', compact('berita'));
+    }
+
+    // Update berita
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
@@ -82,7 +86,6 @@ class BeritaController extends Controller
 
         $berita = Berita::findOrFail($id);
 
-        // hapus gambar lama kalau ada upload baru
         if ($request->hasFile('gambar')) {
             if ($berita->gambar && Storage::disk('public')->exists($berita->gambar)) {
                 Storage::disk('public')->delete($berita->gambar);
@@ -92,12 +95,10 @@ class BeritaController extends Controller
 
         $berita->update($validated);
 
-        return redirect()->back()->with('success', '✅ Berita berhasil diperbarui!');
+        return redirect()->route('admin.berita.index')->with('success', '✅ Berita berhasil diperbarui!');
     }
 
-    /**
-     * Hapus berita (harus login)
-     */
+    // Hapus berita
     public function destroy($id)
     {
         $berita = Berita::findOrFail($id);
@@ -108,6 +109,6 @@ class BeritaController extends Controller
 
         $berita->delete();
 
-        return redirect()->back()->with('success', '🗑️ Berita berhasil dihapus!');
+        return redirect()->route('admin.berita.index')->with('success', '🗑️ Berita berhasil dihapus!');
     }
 }

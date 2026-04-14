@@ -23,13 +23,13 @@ class AuthenticatedSessionController extends Controller
 
         $user = Auth::user();
 
-        // 👉 ADMIN
+        // ADMIN
         if ($user->role === 'admin') {
             return redirect()->route('admin.dashboard');
         }
 
-        // 👉 ALUMNI
-        return redirect()->route('dashboard');
+        // ALUMNI
+        return redirect()->route('lowongan.index');
     }
 
     public function destroy(Request $request): RedirectResponse

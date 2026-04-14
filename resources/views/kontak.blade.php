@@ -2,8 +2,8 @@
 
 @section('content')
 <!-- Hero Section -->
-    <section class="relative h-[400px] flex items-center justify-center text-center text-white bg-cover bg-center"
-        style="background-image: url('{{ asset('images/Branda.jpg') }}');">
+<section class="relative h-[400px] flex items-center justify-center text-center text-white bg-cover bg-center"
+    style="background-image: url('{{ asset('images/Branda.jpg') }}');">
     <div class="absolute inset-0 bg-black bg-opacity-40 flex flex-col justify-center items-center text-white">
         <h1 class="text-4xl font-bold">Kontak Kami</h1>
         <p class="mt-2 text-sm">
@@ -17,24 +17,34 @@
     <!-- Form -->
     <div class="bg-white shadow-lg rounded-2xl p-8">
         <h2 class="text-2xl font-bold mb-4 text-gray-800">Kirim Pesan</h2>
-        <form action="#" method="POST" class="space-y-4">
+
+        @if(session('success'))
+            <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        <form action="{{ route('kontak.store') }}" method="POST" class="space-y-4">
             @csrf
             <div>
                 <label for="nama" class="block text-sm font-semibold text-gray-700">Nama Lengkap</label>
-                <input type="text" id="nama" name="nama" required
+                <input type="text" id="nama" name="nama" value="{{ old('nama') }}" required
                     class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-500">
+                @error('nama') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div>
                 <label for="email" class="block text-sm font-semibold text-gray-700">Email</label>
-                <input type="email" id="email" name="email" required
+                <input type="email" id="email" name="email" value="{{ old('email') }}" required
                     class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-500">
+                @error('email') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div>
                 <label for="pesan" class="block text-sm font-semibold text-gray-700">Pesan</label>
                 <textarea id="pesan" name="pesan" rows="5" required
-                    class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-500"></textarea>
+                    class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-500">{{ old('pesan') }}</textarea>
+                @error('pesan') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
 
             <button type="submit"
@@ -74,6 +84,5 @@
     </div>
 </section>
 
-<!-- Tambahkan sedikit jarak ke footer -->
 <div class="mb-12"></div>
 @endsection

@@ -21,37 +21,35 @@
 
         @php
             $showAll = request()->query('all') == 1;
-            $items = $lowongan ?? collect();
+            $items = $lowongans ?? collect();
         @endphp
 
         <!-- Grid lowongan -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            @if($items->isEmpty())
-                <p class="text-center col-span-3 text-gray-500">Belum ada lowongan saat ini. Pantau terus halaman ini.</p>
-            @else
-                @foreach($items as $index => $item)
-                    @if(!$showAll && $index >= 9)
-                        @break
-                    @endif
-                    <div class="bg-white rounded-xl shadow-md overflow-hidden flex flex-col">
-                        <div class="h-40 w-full overflow-hidden">
-                            @if($item->gambar)
-                                <img src="{{ asset($item->gambar) }}" alt="{{ $item->judul }}" class="w-full h-full object-cover">
-                            @else
-                                <img src="{{ asset('images/LK.jpeg') }}" alt="placeholder" class="w-full h-full object-cover">
-                            @endif
-                        </div>
-                        <div class="p-4 flex-1 flex flex-col">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-2">{{ $item->judul }}</h3>
-                            <p class="text-sm text-gray-500 mb-4">{{ $item->perusahaan ?? 'Perusahaan tidak disebutkan' }}</p>
-                            <div class="mt-auto flex items-center justify-between">
-                                <p class="text-xs text-gray-400">{{ \Carbon\Carbon::parse($item->tanggal ?? now())->format('d M Y') }}</p>
-                                <a href="{{ route('lowongan.show', $item->id) }}" class="text-sm bg-green-600 text-white px-3 py-1 rounded-full hover:bg-green-700 transition">Lihat</a>
-                            </div>
+            @forelse($items as $index => $item)
+                @if(!$showAll && $index >= 9)
+                    @break
+                @endif
+                <div class="bg-white rounded-xl shadow-md overflow-hidden flex flex-col">
+                    <div class="h-40 w-full overflow-hidden">
+                        @if($item->gambar)
+                            <img src="{{ asset('storage/' . $item->gambar) }}" alt="{{ $item->judul }}" class="w-full h-full object-cover">
+                        @else
+                            <img src="{{ asset('images/LK.jpeg') }}" alt="placeholder" class="w-full h-full object-cover">
+                        @endif
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">{{ $item->judul }}</h3>
+                        <p class="text-sm text-gray-500 mb-4">{{ $item->perusahaan ?? 'Perusahaan tidak disebutkan' }}</p>
+                        <div class="mt-auto flex items-center justify-between">
+                            <p class="text-xs text-gray-400">{{ $item->created_at->format('d M Y') }}</p>
+                            <a href="{{ route('lowongan.show', $item->id) }}" class="text-sm bg-green-600 text-white px-3 py-1 rounded-full hover:bg-green-700 transition">Lihat</a>
                         </div>
                     </div>
-                @endforeach
-            @endif
+                </div>
+            @empty
+                <p class="text-center col-span-3 text-gray-500">Belum ada lowongan saat ini. Pantau terus halaman ini.</p>
+            @endforelse
         </div>
 
         <!-- Tombol lihat semua / kembali -->

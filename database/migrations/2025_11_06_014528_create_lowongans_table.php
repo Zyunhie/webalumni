@@ -11,15 +11,22 @@ return new class extends Migration
      */
     public function up(): void
 {
-    Schema::create('lowongan', function (Blueprint $table) {
+Schema::create('lowongans', function (Blueprint $table) {
         $table->id();
-        $table->string('judul', 150);
+        $table->string('judul');
+        $table->string('perusahaan');
+        $table->string('lokasi');
         $table->text('deskripsi');
-        $table->string('perusahaan', 150);
-        $table->string('lokasi', 150)->nullable();
-        $table->date('tanggal_posting')->nullable();
-        $table->date('batas_lamaran')->nullable();
-        $table->string('gambar', 255)->nullable();
+        $table->text('kualifikasi');
+        $table->text('cara_melamar');
+        $table->string('external_link')->nullable();
+        $table->json('target_prodi')->nullable();
+        $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+        $table->boolean('is_internal')->default(true);
+        $table->foreignId('posted_by')->constrained('users')->onDelete('cascade');
+        $table->foreignId('approved_by')->nullable()->constrained('users')->onDelete('set null');
+        $table->timestamp('approved_at')->nullable();
+        $table->text('rejection_reason')->nullable();
         $table->timestamps();
     });
 }
@@ -29,6 +36,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('lowongans');
+Schema::dropIfExists('lowongans');
     }
 };

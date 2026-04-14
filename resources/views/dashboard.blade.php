@@ -17,8 +17,7 @@
         <div class="max-w-6xl mx-auto px-4 text-center">
             <h2 class="text-2xl font-bold mb-4">Tentang Kami</h2>
             <p class="text-gray-600 mb-6">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore
-                et dolore magna aliqua.
+                Website ini dibuat sebagai wadah komunikasi dan informasi antara para alumni Institut Agama Islam Tasikmalaya.
             </p>
             @guest
                 <a href="{{ route('login') }}"

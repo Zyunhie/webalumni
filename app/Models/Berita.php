@@ -11,4 +11,8 @@ class Berita extends Model
 
     protected $table = 'berita'; // nama tabel (bukan 'beritas')
     protected $fillable = ['judul', 'isi', 'gambar', 'tanggal'];
+    
+    protected $casts = [
+        'tanggal' => 'date', // tambahkan ini
+    ];
 }

@@ -62,10 +62,9 @@
                 📥 Import Excel
             </button>
             
-            <!-- Tombol Tambah Manual -->
-            <a href="{{ route($routePrefix . 'create') }}"
-               class="bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2 rounded-full shadow transition">
-               + Tambah Alumni
+            <a href="{{ route('alumni.data') }}"
+               class="bg-gray-500 hover:bg-gray-400 text-white font-semibold px-5 py-2 rounded-full shadow transition">
+               ← Kembali
             </a>
         </div>
         @endif

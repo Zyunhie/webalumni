@@ -17,7 +17,7 @@
             <div class="flex items-center gap-4">
                 <div class="text-3xl">👥</div>
                 <div>
-                    <h3 class="font-bold text-lg">Kelola User</h3>
+                    <h3 class="font-bold text-lg">Kelola Admin</h3>
                     <p class="text-sm text-blue-100">Manage user yang bisa login</p>
                 </div>
             </div>

@@ -19,55 +19,65 @@
         </div>
     @endif
 
-action="{{ route('testimoni.update', $testimoni) }}"
-        @csrf @method('PUT')
+    {{-- FIX: form tag lengkap + enctype wajib untuk file upload --}}
+    <form method="POST" action="{{ route('testimoni.update', $testimoni) }}" enctype="multipart/form-data">
+        @csrf
+        @method('PUT')
 
         <div class="space-y-6">
             <!-- Nama Lengkap -->
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Lengkap <span class="text-red-500">*</span></label>
-                <input type="text" name="nama" value="{{ old('nama', $testimonial->nama) }}" required
+                {{-- FIX: semua variabel konsisten pakai $testimoni --}}
+                <input type="text" name="nama" value="{{ old('nama', $testimoni->nama) }}" required
                        class="w-full px-4 py-4 border border-gray-200 rounded-xl focus:ring-4 focus:ring-green-100 focus:border-green-500 transition text-lg">
             </div>
 
             <!-- Jurusan -->
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Jurusan/Program Studi <span class="text-red-500">*</span></label>
-value="{{ old('jurusan', $testimoni->jurusan) }}" required
+                <input type="text" name="jurusan" value="{{ old('jurusan', $testimoni->jurusan) }}" required
                        class="w-full px-4 py-4 border border-gray-200 rounded-xl focus:ring-4 focus:ring-green-100 focus:border-green-500 transition text-lg">
             </div>
 
             <!-- Tahun Lulus -->
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Tahun Lulus <span class="text-red-500">*</span></label>
-                <input type="number" name="tahun_lulus" value="{{ old('tahun_lulus', $testimonial->tahun_lulus) }}" min="1900" max="2100" required
+                <input type="number" name="tahun_lulus" value="{{ old('tahun_lulus', $testimoni->tahun_lulus) }}" min="1900" max="2100" required
                        class="w-full px-4 py-4 border border-gray-200 rounded-xl focus:ring-4 focus:ring-green-100 focus:border-green-500 transition text-lg">
             </div>
 
             <!-- Pekerjaan -->
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Pekerjaan Saat Ini</label>
-                <input type="text" name="pekerjaan" value="{{ old('pekerjaan', $testimonial->pekerjaan) }}"
+                <input type="text" name="pekerjaan" value="{{ old('pekerjaan', $testimoni->pekerjaan) }}"
                        class="w-full px-4 py-4 border border-gray-200 rounded-xl focus:ring-4 focus:ring-green-100 focus:border-green-500 transition text-lg">
             </div>
 
             <!-- Perusahaan -->
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Tempat Kerja/Perusahaan</label>
-                <input type="text" name="perusahaan" value="{{ old('perusahaan', $testimonial->perusahaan) }}"
+                <input type="text" name="perusahaan" value="{{ old('perusahaan', $testimoni->perusahaan) }}"
                        class="w-full px-4 py-4 border border-gray-200 rounded-xl focus:ring-4 focus:ring-green-100 focus:border-green-500 transition text-lg">
             </div>
 
             <!-- Foto -->
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Foto Profil</label>
-                @if($testimonial->foto)
-                    <div class="mb-4 p-4 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
-                        <img src="{{ Storage::url($testimonial->foto) }}" alt="Foto saat ini" class="w-32 h-32 object-cover rounded-2xl mx-auto">
-                        <p class="text-sm text-gray-500 mt-2 text-center">Foto saat ini</p>
-                    </div>
-                @endif
-                <div class="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:border-green-400 transition cursor-pointer group">
+
+                {{-- FIX: Preview foto existing yang sudah tersimpan --}}
+                <div id="foto-preview-wrapper" class="{{ $testimoni->foto ? '' : 'hidden' }} mb-4 p-4 bg-gray-50 rounded-xl border-2 border-dashed border-green-300 text-center">
+                    <img id="foto-preview"
+                         src="{{ $testimoni->foto ? Storage::url($testimoni->foto) : '' }}"
+                         alt="Foto saat ini"
+                         class="w-32 h-32 object-cover rounded-2xl mx-auto">
+                    <p class="text-sm text-gray-500 mt-2" id="foto-label">
+                        {{ $testimoni->foto ? 'Foto saat ini' : '' }}
+                    </p>
+                    <button type="button" id="foto-remove" class="text-xs text-red-500 hover:text-red-700 mt-1">× Ganti foto</button>
+                </div>
+
+                <div id="foto-dropzone" class="{{ $testimoni->foto ? 'hidden' : '' }} border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:border-green-400 transition cursor-pointer group">
                     <input type="file" name="foto" accept="image/*" class="hidden" id="foto-upload">
                     <label for="foto-upload" class="cursor-pointer">
                         <div class="group-hover:text-green-600 transition">
@@ -86,13 +96,13 @@ value="{{ old('jurusan', $testimoni->jurusan) }}" required
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Testimoni Anda <span class="text-red-500">*</span></label>
                 <textarea name="isi_testimoni" rows="8" required
-                          class="w-full px-4 py-4 border border-gray-200 rounded-xl focus:ring-4 focus:ring-green-100 focus:border-green-500 transition text-lg resize-vertical">{{ old('isi_testimoni', $testimonial->isi_testimoni) }}</textarea>
+                          class="w-full px-4 py-4 border border-gray-200 rounded-xl focus:ring-4 focus:ring-green-100 focus:border-green-500 transition text-lg resize-vertical">{{ old('isi_testimoni', $testimoni->isi_testimoni) }}</textarea>
             </div>
         </div>
 
         <div class="flex flex-col sm:flex-row gap-4 mt-12 pt-8 border-t border-gray-200">
-            <a href="{{ route('testimoni.saya') }}" class="flex-1 sm:flex-none bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-8 py-4 rounded-xl text-center transition">
-                ← Kembali ke Testimoni Saya
+            <a href="{{ route('testimoni.index') }}" class="flex-1 sm:flex-none bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-8 py-4 rounded-xl text-center transition">
+                ← Kembali ke Galeri
             </a>
             <button type="submit" class="flex-1 sm:flex-none bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1">
                 Update & Kirim Ulang Review
@@ -102,16 +112,39 @@ value="{{ old('jurusan', $testimoni->jurusan) }}" required
 </section>
 
 <script>
-document.getElementById('foto-upload').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
+    const fotoUpload   = document.getElementById('foto-upload');
+    const fotoPreview  = document.getElementById('foto-preview');
+    const fotoWrapper  = document.getElementById('foto-preview-wrapper');
+    const fotoDropzone = document.getElementById('foto-dropzone');
+    const fotoLabel    = document.getElementById('foto-label');
+    const fotoRemove   = document.getElementById('foto-remove');
+
+    fotoUpload.addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (file.size > 2 * 1024 * 1024) {
+            alert('Ukuran file maksimal 2MB');
+            this.value = '';
+            return;
+        }
+
         const reader = new FileReader();
-        reader.onload = function(e) {
-            const preview = document.querySelector('.object-cover');
-            if (preview) preview.src = e.target.result;
+        reader.onload = function (e) {
+            fotoPreview.src          = e.target.result;
+            fotoLabel.textContent    = file.name;
+            fotoWrapper.classList.remove('hidden');
+            fotoDropzone.classList.add('hidden');
         };
         reader.readAsDataURL(file);
-    }
-});
+    });
+
+    fotoRemove.addEventListener('click', function () {
+        fotoUpload.value         = '';
+        fotoPreview.src          = '';
+        fotoLabel.textContent    = '';
+        fotoWrapper.classList.add('hidden');
+        fotoDropzone.classList.remove('hidden');
+    });
 </script>
 @endsection

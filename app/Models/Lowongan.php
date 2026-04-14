@@ -9,23 +9,52 @@ class Lowongan extends Model
 {
     use HasFactory;
 
-    // Nama tabel di database
-    protected $table = 'lowongan';
+    protected $table = 'lowongans';
 
-    // Field yang bisa diisi massal
     protected $fillable = [
         'judul',
-        'deskripsi',
         'perusahaan',
         'lokasi',
-        'tanggal_post',    // tanggal posting lowongan
-        'batas_lamaran',   // batas pengiriman lamaran
-        'gambar',          // path gambar lowongan
+        'deskripsi',
+        'kualifikasi',
+        'cara_melamar',
+        'external_link',
+        'gambar',               // ← tambahkan
+        'target_prodi',
+        'status',
+        'is_internal',
+        'posted_by',
+        'rejection_reason',
     ];
 
-    // Casting otomatis menjadi Carbon (tanggal)
     protected $casts = [
-        'tanggal_post' => 'datetime',
-        'batas_lamaran' => 'datetime',
+        'target_prodi' => 'array',
+        'is_internal' => 'boolean',
+        'approved_at' => 'datetime',
     ];
+
+    public function postedBy()
+    {
+        return $this->belongsTo(User::class, 'posted_by');
+    }
+
+    public function approvedBy()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function lamarans()
+    {
+        return $this->hasMany(Lamaran::class);
+    }
+
+    public function scopeApproved($query)
+    {
+        return $query->where('status', 'approved');
+    }
+
+    public function scopeForProdi($query, $prodi)
+    {
+        return $query->whereJsonContains('target_prodi', $prodi);
+    }
 }

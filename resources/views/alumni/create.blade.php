@@ -12,7 +12,7 @@
                 @endforeach
             </ul>
         </div>
-    @endif
+    @endif 
 
     <form method="POST" action="{{ route('alumni.store') }}" enctype="multipart/form-data" class="bg-white rounded-xl shadow-md p-6 space-y-5">
         @csrf

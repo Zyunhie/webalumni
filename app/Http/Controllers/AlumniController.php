@@ -3,14 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Alumni;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class AlumniController extends Controller
 {
-    /**
-     * Constructor untuk middleware
-     */
     public function __construct()
     {
         $this->middleware('auth')->except(['index', 'show']);
@@ -18,120 +19,127 @@ class AlumniController extends Controller
     }
 
     /**
-     * ===============================
-     * LIST ALUMNI - DYNAMIC BERDASARKAN PRODI
-     * ADMIN: BISA LIHAT SEMUA STATUS
-     * ===============================
+     * INDEX - Tampilkan semua alumni (tanpa filter status) untuk user login
+     * Untuk guest, hanya tampilkan yang approved.
      */
     public function index(Request $request)
-    {
-        // Deteksi prodi dari route name
-        $prodi = null;
-        $routeName = $request->route()->getName();
-        
-        if (str_contains($routeName, 'alumni.s1.pgmi')) {
-            $prodi = 'PGMI';
-        } elseif (str_contains($routeName, 'alumni.s1.pai')) {
-            $prodi = 'PAI';
-        } elseif (str_contains($routeName, 'alumni.s1.piaud')) {
-            $prodi = 'PIAUD';
-        } elseif (str_contains($routeName, 'alumni.s1.mpi')) {
-            $prodi = 'MPI';
-        } elseif (str_contains($routeName, 'alumni.s1.bkpi')) {
-            $prodi = 'BKPI';
-        } elseif (str_contains($routeName, 'alumni.s1.eksyar')) {
-            $prodi = 'EKSYAR';
-        } elseif (str_contains($routeName, 'alumni.s1.as')) {
-            $prodi = 'AS';
-        } elseif (str_contains($routeName, 'alumni.s1.htn')) {
-            $prodi = 'HTN';
-        } elseif (str_contains($routeName, 'alumni.s2.pai')) {
-            $prodi = 'PAI (S2)';
+{
+    // Deteksi prodi dari route name
+    $prodi = null;
+    $routeName = $request->route()->getName();
+    $prodiMapping = [
+        'alumni.s1.pgmi' => 'PGMI',
+        'alumni.s1.pai'  => 'PAI',
+        'alumni.s1.piaud'=> 'PIAUD',
+        'alumni.s1.mpi'  => 'MPI',
+        'alumni.s1.bkpi' => 'BKPI',
+        'alumni.s1.eksyar'=> 'EKSYAR',
+        'alumni.s1.as'   => 'AS',
+        'alumni.s1.htn'  => 'HTN',
+        'alumni.s2.pai'  => 'PAI (S2)',
+    ];
+    foreach ($prodiMapping as $routeKey => $prodiName) {
+        if (str_contains($routeName, $routeKey)) {
+            $prodi = $prodiName;
+            break;
         }
-
-        // Jika admin, tampilkan semua alumni (approved, pending, rejected)
-        // Jika user biasa, hanya tampilkan yang approved
-        if (auth()->check() && auth()->user()->role === 'admin') {
-            $query = Alumni::query();
-        } else {
-            $query = Alumni::where('status', 'approved');
-        }
-
-        // Filter berdasarkan prodi jika terdeteksi
-        if ($prodi) {
-            $query->where('prodi', $prodi);
-        }
-
-        // Filter tambahan dari request
-        if ($request->filled('prodi')) {
-            $query->where('prodi', $request->prodi);
-        }
-
-        if ($request->filled('angkatan') && $request->angkatan !== 'all') {
-            $query->where('angkatan', $request->angkatan);
-        }
-
-        if ($request->filled('lulusan') && $request->lulusan !== 'all') {
-            $query->where('lulusan', $request->lulusan);
-        }
-
-        $alumni = $query->latest()->paginate(20);
-
-        // Tentukan view berdasarkan route name
-        $viewName = 'alumni.index'; // default
-        
-        // Jika route adalah alumni.s1.*, gunakan view yang sesuai
-        if (str_contains($routeName, 'alumni.s1.pgmi')) {
-            $viewName = 'alumni.s1.pgmi.index';
-        } elseif (str_contains($routeName, 'alumni.s1.')) {
-            $viewName = 'alumni.s1.pgmi.index';
-        } elseif (str_contains($routeName, 'alumni.s2.')) {
-            $viewName = 'alumni.s1.pgmi.index';
-        }
-
-        // Untuk filter (ambil daftar angkatan & lulusan unik dari semua data)
-        $angkatanList = Alumni::distinct()->orderBy('angkatan', 'desc')->pluck('angkatan');
-        $lulusanList = Alumni::distinct()->orderBy('lulusan', 'desc')->pluck('lulusan');
-
-        return view($viewName, compact('alumni', 'angkatanList', 'lulusanList', 'prodi'));
     }
 
+    $query = Alumni::query();
+
+    // Jika mode pending dan user bukan admin, redirect ke index normal
+    if ($request->get('mode') === 'pending') {
+        if (!auth()->check() || auth()->user()->role !== 'admin') {
+            // DEBUG: Auth lost on toggle - check logs
+            Log::info('ALUMNI TOGGLE DEBUG', [
+                'auth_check' => auth()->check(),
+                'user_id' => auth()->id(),
+                'role' => auth()->user()?->role ?? 'no user',
+                'session_id' => session()->getId(),
+                'url' => $request->fullUrl(),
+                'ip' => $request->ip()
+            ]);
+            return redirect()->route($this->getProdiRoute($prodi ?? 'PGMI') . '.index', 
+                $request->except('mode'));
+        }
+    }
+
+    // Guest hanya lihat approved
+    if (!auth()->check()) {
+        $query->where('status', 'approved');
+    }
+
+    // Filter prodi dari route
+    if ($prodi) {
+    $query->where('prodi', $prodi);
+    }
+
+    // Filter dari request (prodi dari link, angkatan)
+    if ($request->filled('prodi')) {
+        $query->where('prodi', $request->prodi);
+    }
+    if ($request->filled('angkatan') && $request->angkatan !== 'all') {
+        $query->where('angkatan', $request->angkatan);
+    }
+
+    // Mode pending untuk admin
+    if ($request->get('mode') === 'pending' && auth()->check() && auth()->user()->role === 'admin') {
+        $query->where('status', 'pending');
+    }
+
+    $alumni = $query->latest()->paginate(20);
+
+    // AJAX partial for toggle
+    if ($request->header('X-Requested-With') === 'XMLHttpRequest') {
+        return view('alumni.partials.table', compact('alumni', 'routePrefix'));
+    }
+
+    $angkatanList = Alumni::distinct()->orderBy('angkatan', 'desc')->pluck('angkatan');
+    $routePrefix = $this->getProdiRoute($prodi ?? 'PGMI');
+
+    return view('alumni.index', compact('alumni', 'angkatanList', 'prodi', 'routePrefix'));
+}
+
     /**
-     * ===============================
-     * FORM TAMBAH DATA (USER LOGIN)
-     * ===============================
+     * CREATE - Form tambah data
      */
     public function create(Request $request)
     {
-        // Deteksi prodi dari route name
         $routeName = $request->route()->getName();
         $selectedProdi = null;
         
-        if (str_contains($routeName, 'alumni.s1.pgmi')) {
-            $selectedProdi = 'PGMI';
-        } elseif (str_contains($routeName, 'alumni.s1.pai')) {
-            $selectedProdi = 'PAI';
-        } elseif (str_contains($routeName, 'alumni.s1.piaud')) {
-            $selectedProdi = 'PIAUD';
-        } elseif (str_contains($routeName, 'alumni.s1.mpi')) {
-            $selectedProdi = 'MPI';
-        } elseif (str_contains($routeName, 'alumni.s1.bkpi')) {
-            $selectedProdi = 'BKPI';
-        } elseif (str_contains($routeName, 'alumni.s1.eksyar')) {
-            $selectedProdi = 'EKSYAR';
-        } elseif (str_contains($routeName, 'alumni.s1.as')) {
-            $selectedProdi = 'AS';
-        } elseif (str_contains($routeName, 'alumni.s1.htn')) {
-            $selectedProdi = 'HTN';
-        } elseif (str_contains($routeName, 'alumni.s2.pai')) {
-            $selectedProdi = 'PAI (S2)';
+        $prodiMapping = [
+            'alumni.s1.pgmi' => 'PGMI',
+            'alumni.s1.pai' => 'PAI',
+            'alumni.s1.piaud' => 'PIAUD',
+            'alumni.s1.mpi' => 'MPI',
+            'alumni.s1.bkpi' => 'BKPI',
+            'alumni.s1.eksyar' => 'EKSYAR',
+            'alumni.s1.as' => 'AS',
+            'alumni.s1.htn' => 'HTN',
+            'alumni.s2.pai' => 'PAI (S2)',
+        ];
+        
+        foreach ($prodiMapping as $routeKey => $prodiName) {
+            if (str_contains($routeName, $routeKey)) {
+                $selectedProdi = $prodiName;
+                break;
+            }
         }
 
-        return view('alumni.create', compact('selectedProdi'));
+        // Jika admin, ambil daftar user untuk dipilih (opsional)
+        $users = [];
+        if (auth()->user()->role === 'admin') {
+            $users = User::where('role', '!=', 'admin')->orWhere('role', 'alumni')->get();
+        }
+
+        return view('alumni.create', compact('selectedProdi', 'users'));
     }
 
     /**
-     * SIMPAN DATA BARU (STATUS: PENDING JIKA USER, APPROVED JIKA ADMIN)
+     * STORE - Simpan data baru
+     * Jika admin: bisa pilih user_id, jika tidak diisi maka buat user baru
+     * Jika user biasa: pakai auth()->id()
      */
     public function store(Request $request)
     {
@@ -149,21 +157,37 @@ class AlumniController extends Controller
             'foto'       => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'ijazah'     => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'transkrip'  => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'user_id'    => 'nullable|exists:users,id', // khusus admin
         ]);
 
-        $data = $request->except(['foto', 'ijazah', 'transkrip']);
-        $data['user_id'] = auth()->id();
+        $data = $request->except(['foto', 'ijazah', 'transkrip', 'user_id']);
 
-        // POIN 2: Jika admin yang menambah data → langsung approved
-        // Jika user biasa → status pending (perlu approve)
+        // Penentuan user_id
         if (auth()->user()->role === 'admin') {
+            if ($request->filled('user_id')) {
+                // Admin pilih user yang sudah ada
+                $data['user_id'] = $request->user_id;
+            } else {
+                // Admin tidak pilih user_id → buat user baru
+$user = User::create([
+    'name'     => $request->nama,
+    'email'    => $request->email ?? ($request->nim ? $request->nim . '@alumni.temp.com' : Str::random(10) . '@temp.com'),
+    'password' => $request->nim ? Hash::make($request->nim) : Hash::make(Str::random(8)),
+    'role'     => 'alumni',
+    'nim'      => $request->nim,
+]);
+                $data['user_id'] = $user->id;
+            }
             $data['status'] = 'approved';
             $data['approved_by'] = auth()->id();
             $data['approved_at'] = now();
         } else {
+            // User biasa: langsung pakai user_id nya sendiri
+            $data['user_id'] = auth()->id();
             $data['status'] = 'pending';
         }
 
+        // Upload file
         if ($request->hasFile('ijazah')) {
             $data['ijazah'] = $request->file('ijazah')->store('ijazah', 'public');
         }
@@ -176,21 +200,461 @@ class AlumniController extends Controller
 
         Alumni::create($data);
 
-        // POIN 1: Redirect balik ke halaman prodi tempat user nambahin data
-        $prodi = $request->prodi;
-        $redirectRoute = $this->getProdiRoute($prodi);
+        $redirectRoute = $this->getProdiRoute($request->prodi);
+        $message = (auth()->user()->role === 'admin') 
+            ? 'Data alumni berhasil ditambahkan (approved).' 
+            : 'Data berhasil dikirim dan menunggu persetujuan admin.';
 
-        if (auth()->user()->role === 'admin') {
-            return redirect()->route($redirectRoute . '.index')
-                ->with('success', 'Data alumni berhasil ditambahkan dan langsung disetujui.');
-        } else {
-            return redirect()->route($redirectRoute . '.index')
-                ->with('success', 'Data berhasil dikirim dan menunggu persetujuan admin.');
-        }
+        return redirect()->route($redirectRoute . '.index')->with('success', $message);
     }
 
     /**
-     * Helper: Get route prefix berdasarkan prodi
+     * SHOW - Detail alumni (dengan proteksi)
+     */
+    public function show($id)
+    {
+        $alumni = Alumni::findOrFail($id);
+
+        if ($alumni->status !== 'approved' && 
+            auth()->check() && 
+            auth()->user()->role !== 'admin' && 
+            $alumni->user_id !== auth()->id()) {
+            abort(403, 'Anda tidak berhak mengakses data ini.');
+        }
+
+        $routePrefix = $this->getProdiRoute($alumni->prodi);
+        return view('alumni.show', compact('alumni', 'routePrefix'));
+    }
+
+    /**
+     * EDIT - Form edit (dengan proteksi)
+     */
+    public function edit($id)
+    {
+        $alumni = Alumni::findOrFail($id);
+
+        if (auth()->user()->role != 'admin' && $alumni->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $routePrefix = $this->getProdiRoute($alumni->prodi);
+        return view('alumni.edit', compact('alumni', 'routePrefix'));
+    }
+
+    /**
+     * UPDATE
+     */
+    public function update(Request $request, $id)
+{
+    $alumni = Alumni::findOrFail($id);
+
+    if (auth()->user()->role != 'admin' && $alumni->user_id !== auth()->id()) {
+        abort(403);
+    }
+
+    $request->validate([
+        'nama'       => 'required|string|max:100',
+        'nim'        => 'nullable|string|max:20|unique:alumni,nim,' . $alumni->id,
+        'prodi'      => 'required|string|max:50',
+        'angkatan'   => 'nullable|integer|min:1950|max:' . date('Y'),
+        'lulusan'    => 'nullable|integer|min:1950|max:' . (date('Y') + 5),
+        'pekerjaan'  => 'nullable|string|max:100',
+        'perusahaan' => 'nullable|string|max:100',
+        'email'      => 'nullable|email|max:100',
+        'no_hp'      => 'nullable|string|max:20',
+        'alamat'     => 'nullable|string',
+        'foto'       => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        'ijazah'     => 'nullable|file|mimes:pdf,jpeg,jpg,png|max:5120',
+        'transkrip'  => 'nullable|file|mimes:pdf,jpeg,jpg,png|max:5120',
+    ]);
+
+    // Jika admin, langsung update tanpa pending
+    if (auth()->user()->role == 'admin') {
+        $data = $request->except(['_token', '_method', 'foto', 'ijazah', 'transkrip']);
+        // handle file upload langsung (sama seperti kode admin sebelumnya)
+        if ($request->hasFile('foto')) {
+            if ($alumni->foto) Storage::disk('public')->delete($alumni->foto);
+            $data['foto'] = $request->file('foto')->store('foto_alumni', 'public');
+        }
+        if ($request->hasFile('ijazah')) {
+            if ($alumni->ijazah) Storage::disk('public')->delete($alumni->ijazah);
+            $data['ijazah'] = $request->file('ijazah')->store('ijazah', 'public');
+        }
+        if ($request->hasFile('transkrip')) {
+            if ($alumni->transkrip) Storage::disk('public')->delete($alumni->transkrip);
+            $data['transkrip'] = $request->file('transkrip')->store('transkrip', 'public');
+        }
+        $alumni->update($data);
+        return redirect()->route($this->getProdiRoute($alumni->prodi) . '.show', $alumni->id)
+            ->with('success', 'Data berhasil diperbarui (oleh admin).');
+    }
+
+    // Jika bukan admin (yaitu pemilik data), simpan perubahan ke pending_data
+    $pendingData = $request->except(['_token', '_method', 'foto', 'ijazah', 'transkrip']);
+    
+    // Upload file sementara ke folder pending_*
+    if ($request->hasFile('foto')) {
+        $pendingData['foto'] = $request->file('foto')->store('pending_foto', 'public');
+    }
+    if ($request->hasFile('ijazah')) {
+        $pendingData['ijazah'] = $request->file('ijazah')->store('pending_ijazah', 'public');
+    }
+    if ($request->hasFile('transkrip')) {
+        $pendingData['transkrip'] = $request->file('transkrip')->store('pending_transkrip', 'public');
+    }
+
+    $alumni->update([
+        'status' => 'pending',
+        'pending_data' => json_encode($pendingData),
+        'rejection_reason' => null,
+    ]);
+
+    return redirect()->route($this->getProdiRoute($alumni->prodi) . '.show', $alumni->id)
+        ->with('success', 'Perubahan disimpan dan menunggu persetujuan admin.');
+}
+
+    /**
+     * DESTROY
+     */
+    public function destroy($id)
+    {
+        $alumni = Alumni::findOrFail($id);
+
+        if (auth()->user()->role != 'admin' && $alumni->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        if ($alumni->foto) Storage::disk('public')->delete($alumni->foto);
+        if ($alumni->ijazah) Storage::disk('public')->delete($alumni->ijazah);
+        if ($alumni->transkrip) Storage::disk('public')->delete($alumni->transkrip);
+
+        $alumni->delete();
+
+        $routePrefix = $this->getProdiRoute($alumni->prodi);
+        return redirect()->route($routePrefix . '.index')
+            ->with('success', 'Data alumni berhasil dihapus.');
+    }
+
+    /**
+     * UPLOAD FORM (khusus untuk alumni sendiri)
+     */
+    public function uploadForm($id)
+    {
+        $alumni = Alumni::findOrFail($id);
+
+        if ($alumni->user_id != auth()->id()) {
+            abort(403, 'Anda hanya bisa mengupload dokumen untuk data Anda sendiri.');
+        }
+
+        $routePrefix = $this->getProdiRoute($alumni->prodi);
+        return view('alumni.upload', compact('alumni', 'routePrefix'));
+    }
+
+    /**
+     * UPLOAD FILE
+     */
+    public function uploadFile(Request $request, $id)
+{
+    $alumni = Alumni::findOrFail($id);
+
+    if ($alumni->user_id != auth()->id()) {
+        abort(403);
+    }
+
+    $request->validate([
+        'ijazah'    => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+        'transkrip' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+    ]);
+
+    // Jika admin, langsung upload ke kolom utama
+    if (auth()->user()->role == 'admin') {
+        if ($request->hasFile('ijazah')) {
+            if ($alumni->ijazah) Storage::disk('public')->delete($alumni->ijazah);
+            $alumni->ijazah = $request->file('ijazah')->store('ijazah', 'public');
+        }
+        if ($request->hasFile('transkrip')) {
+            if ($alumni->transkrip) Storage::disk('public')->delete($alumni->transkrip);
+            $alumni->transkrip = $request->file('transkrip')->store('transkrip', 'public');
+        }
+        $alumni->save();
+        return redirect()->route($this->getProdiRoute($alumni->prodi) . '.show', $alumni->id)
+            ->with('success', 'Dokumen berhasil diupload.');
+    }
+
+    // Jika alumni sendiri, simpan ke pending_data
+    $pendingData = $alumni->pending_data ? json_decode($alumni->pending_data, true) : [];
+    if ($request->hasFile('ijazah')) {
+        $pendingData['ijazah'] = $request->file('ijazah')->store('pending_ijazah', 'public');
+    }
+    if ($request->hasFile('transkrip')) {
+        $pendingData['transkrip'] = $request->file('transkrip')->store('pending_transkrip', 'public');
+    }
+
+    $alumni->update([
+        'status' => 'pending',
+        'pending_data' => json_encode($pendingData),
+        'rejection_reason' => null,
+    ]);
+
+    return redirect()->route($this->getProdiRoute($alumni->prodi) . '.show', $alumni->id)
+        ->with('success', 'Dokumen diupload, menunggu persetujuan admin.');
+}
+
+    /**
+     * PROFILE - milik sendiri
+     */
+    public function profile()
+    {
+        $user = auth()->user();
+        $alumni = Alumni::where('user_id', $user->id)->get();
+        return view('alumni.profile', compact('alumni'));
+    }
+
+    /**
+     * ADMIN: PENDING LIST
+     */
+    public function pending()
+    {
+        $alumni = Alumni::where('status', 'pending')->with('user')->latest()->get();
+        return view('admin.alumni.pending', compact('alumni'));
+    }
+
+    public function approve($id)
+{
+    $alumni = Alumni::findOrFail($id);
+    $pending = $alumni->pending_data ? json_decode($alumni->pending_data, true) : [];
+
+    if (!empty($pending)) {
+        // Pindahkan file dari pending_* ke folder permanen jika ada
+        if (isset($pending['foto']) && file_exists(storage_path('app/public/' . $pending['foto']))) {
+            // Hapus foto lama jika ada
+            if ($alumni->foto) Storage::disk('public')->delete($alumni->foto);
+            // Pindahkan file (rename) ke folder permanen
+            $newPath = 'foto_alumni/' . basename($pending['foto']);
+            Storage::disk('public')->move($pending['foto'], $newPath);
+            $pending['foto'] = $newPath;
+        }
+        if (isset($pending['ijazah']) && file_exists(storage_path('app/public/' . $pending['ijazah']))) {
+            if ($alumni->ijazah) Storage::disk('public')->delete($alumni->ijazah);
+            $newPath = 'ijazah/' . basename($pending['ijazah']);
+            Storage::disk('public')->move($pending['ijazah'], $newPath);
+            $pending['ijazah'] = $newPath;
+        }
+        if (isset($pending['transkrip']) && file_exists(storage_path('app/public/' . $pending['transkrip']))) {
+            if ($alumni->transkrip) Storage::disk('public')->delete($alumni->transkrip);
+            $newPath = 'transkrip/' . basename($pending['transkrip']);
+            Storage::disk('public')->move($pending['transkrip'], $newPath);
+            $pending['transkrip'] = $newPath;
+        }
+
+        // Terapkan perubahan ke kolom utama
+        $alumni->update(array_merge($pending, [
+            'status' => 'approved',
+            'pending_data' => null,
+            'rejection_reason' => null,
+            'approved_by' => auth()->id(),
+            'approved_at' => now(),
+        ]));
+    } else {
+        // Jika tidak ada pending_data, hanya ubah status
+        $alumni->update([
+            'status' => 'approved',
+            'approved_by' => auth()->id(),
+            'approved_at' => now(),
+        ]);
+    }
+
+    return back()->with('success', 'Perubahan disetujui.');
+}
+
+    public function reject(Request $request, $id)
+{
+    $request->validate(['reason' => 'required|string|max:1000']);
+    $alumni = Alumni::findOrFail($id);
+
+    // Hapus file-file pending jika ada
+    if ($alumni->pending_data) {
+        $pending = json_decode($alumni->pending_data, true) ?: [];
+        foreach (['foto', 'ijazah', 'transkrip'] as $field) {
+            if (isset($pending[$field]) && Storage::disk('public')->exists($pending[$field])) {
+                Storage::disk('public')->delete($pending[$field]);
+            }
+        }
+    }
+
+    $updateData = [
+        'status' => 'rejected',
+        'rejection_reason' => $request->reason,
+        'pending_data' => null,
+    ];
+
+    $alumni->update($updateData);
+
+    Log::info('REJECT DEBUG', [
+        'alumni_id' => $id,
+        'reason' => $request->reason,
+        'updated' => $alumni->fresh()->only(['status', 'rejection_reason'])
+    ]);
+
+    return back()->with('error', 'Perubahan ditolak. Alasan: ' . $request->reason);
+}
+
+    /**
+     * IMPORT CSV (otomatis buat user)
+     */
+    public function import(Request $request)
+{
+    $request->validate(['file' => 'required|file|mimes:csv,txt|max:5120']);
+
+    $file = $request->file('file');
+    $path = $file->getRealPath();
+    $content = file_get_contents($path);
+
+    // Hapus BOM
+    if (substr($content, 0, 3) == "\xEF\xBB\xBF") {
+        $content = substr($content, 3);
+    }
+
+    // Deteksi delimiter
+    $firstLine = strtok($content, "\n");
+    $delimiters = [',', ';', "\t"];
+    $bestDelimiter = ',';
+    $maxCount = 0;
+    foreach ($delimiters as $delim) {
+        $count = substr_count($firstLine, $delim);
+        if ($count > $maxCount) {
+            $maxCount = $count;
+            $bestDelimiter = $delim;
+        }
+    }
+    $delimiter = $bestDelimiter;
+
+    // Baca CSV
+    $rows = array_map(function($line) use ($delimiter) {
+        return str_getcsv($line, $delimiter);
+    }, explode("\n", $content));
+
+    if (count($rows) < 2) {
+        return back()->with('error', 'File CSV tidak memiliki data atau header.');
+    }
+
+    $header = array_shift($rows);
+    $header = array_map('trim', $header);
+
+    // Cari index kolom yang diperlukan
+    $namaIndex = array_search('nama', array_map('strtolower', $header));
+    $prodiIndex = array_search('prodi', array_map('strtolower', $header));
+    $nimIndex = array_search('nim', array_map('strtolower', $header));
+    $emailIndex = array_search('email', array_map('strtolower', $header));
+    $angkatanIndex = array_search('angkatan', array_map('strtolower', $header));
+    $lulusanIndex = array_search('lulusan', array_map('strtolower', $header));
+    $pekerjaanIndex = array_search('pekerjaan', array_map('strtolower', $header));
+    $perusahaanIndex = array_search('perusahaan', array_map('strtolower', $header));
+    $no_hpIndex = array_search('no_hp', array_map('strtolower', $header));
+    $alamatIndex = array_search('alamat', array_map('strtolower', $header));
+
+    if ($namaIndex === false || $prodiIndex === false) {
+        return back()->with('error', 'Header harus mengandung kolom "nama" dan "prodi". Header: ' . implode(',', $header));
+    }
+
+    $imported = 0;
+    $errors = [];
+
+    foreach ($rows as $rowNum => $row) {
+        if (count($row) < count($header)) continue;
+        if (empty(array_filter($row))) continue;
+
+        $nama = trim($row[$namaIndex] ?? '');
+        $prodi = trim($row[$prodiIndex] ?? '');
+        if (empty($nama) || empty($prodi)) {
+            $errors[] = "Baris " . ($rowNum+2) . ": Nama atau Prodi kosong";
+            continue;
+        }
+
+        $nim = $nimIndex !== false ? trim($row[$nimIndex] ?? '') : null;
+        $email = $emailIndex !== false ? trim($row[$emailIndex] ?? '') : null;
+        $angkatan = $angkatanIndex !== false ? trim($row[$angkatanIndex] ?? '') : null;
+        $lulusan = $lulusanIndex !== false ? trim($row[$lulusanIndex] ?? '') : null;
+        $pekerjaan = $pekerjaanIndex !== false ? trim($row[$pekerjaanIndex] ?? '') : null;
+        $perusahaan = $perusahaanIndex !== false ? trim($row[$perusahaanIndex] ?? '') : null;
+        $no_hp = $no_hpIndex !== false ? trim($row[$no_hpIndex] ?? '') : null;
+        $alamat = $alamatIndex !== false ? trim($row[$alamatIndex] ?? '') : null;
+
+        // Cari atau buat user
+        $user = null;
+        if ($email) {
+            $user = User::where('email', $email)->first();
+        }
+        if (!$user && $nim) {
+            $user = User::where('nim', $nim)->first();
+        }
+
+        if (!$user) {
+            try {
+                $user = User::create([
+                    'name' => $nama,
+                    'email' => $email ?? ($nim ? $nim . '@alumni.import.com' : \Illuminate\Support\Str::random(10) . '@temp.com'),
+                    'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+                    'role' => 'alumni',
+                    'nim' => $nim,
+                ]);
+            } catch (\Exception $e) {
+                $errors[] = "Baris " . ($rowNum+2) . ": Gagal buat user - " . $e->getMessage();
+                continue;
+            }
+        }
+
+        // Buat alumni
+        try {
+            Alumni::create([
+                'nama' => $nama,
+                'nim' => $nim,
+                'prodi' => $prodi,
+                'angkatan' => $angkatan ?: null,
+                'lulusan' => $lulusan ?: null,
+                'pekerjaan' => $pekerjaan,
+                'perusahaan' => $perusahaan,
+                'email' => $email,
+                'no_hp' => $no_hp,
+                'alamat' => $alamat,
+                'user_id' => $user->id,
+                'status' => 'approved',
+                'approved_by' => auth()->id(),
+                'approved_at' => now(),
+            ]);
+            $imported++;
+        } catch (\Exception $e) {
+            $errors[] = "Baris " . ($rowNum+2) . ": Gagal simpan alumni - " . $e->getMessage();
+        }
+    }
+
+    $msg = "Berhasil import $imported data.";
+    if (!empty($errors)) {
+        $msg .= " Error: " . implode('; ', $errors);
+        return back()->with('warning', $msg);
+    }
+    return back()->with('success', $msg);
+}
+
+    public function downloadTemplate()
+    {
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="template_alumni.csv"',
+        ];
+
+        $callback = function() {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['nama', 'nim', 'prodi', 'angkatan', 'lulusan', 'pekerjaan', 'perusahaan', 'email', 'no_hp', 'alamat']);
+            fputcsv($handle, ['Contoh Nama', '123456789', 'PGMI', '2020', '2024', 'Guru', 'SDN 1', 'contoh@email.com', '081234567890', 'Jl. Contoh']);
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Helper: get route prefix based on prodi
      */
     private function getProdiRoute($prodi)
     {
@@ -205,271 +669,6 @@ class AlumniController extends Controller
             'HTN' => 'alumni.s1.htn',
             'PAI (S2)' => 'alumni.s2.pai',
         ];
-
         return $routes[$prodi] ?? 'alumni.s1.pgmi';
-    }
-
-    /**
-     * ===============================
-     * DETAIL ALUMNI (PUBLIC HANYA APPROVED, ATAU PEMILIK/ADMIN)
-     * ===============================
-     */
-    public function show($id)
-    {
-        $alumni = Alumni::findOrFail($id);
-
-        // Jika status approved, boleh siapa saja lihat
-        // Jika tidak approved, hanya admin atau pemilik yang bisa lihat
-        if ($alumni->status !== 'approved' && 
-            auth()->user()->role !== 'admin' && 
-            $alumni->user_id !== auth()->id()) {
-            abort(403, 'Anda tidak berhak mengakses data ini.');
-        }
-
-        return view('alumni.show', compact('alumni'));
-    }
-
-    /**
-     * ===============================
-     * EDIT DATA (ADMIN ATAU PEMILIK)
-     * ===============================
-     */
-    public function edit($id)
-    {
-        $alumni = Alumni::findOrFail($id);
-
-        // Izinkan jika admin atau pemilik data
-        if (auth()->user()->role != 'admin' && $alumni->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        return view('alumni.edit', compact('alumni'));
-    }
-
-    /**
-     * UPDATE DATA
-     */
-    public function update(Request $request, $id)
-    {
-        $alumni = Alumni::findOrFail($id);
-
-        // Cek otorisasi
-        if (auth()->user()->role != 'admin' && $alumni->user_id !== auth()->id()) {
-            abort(403);
-        }
-
-        $request->validate([
-            'nama'       => 'required|string|max:100',
-            'nim'        => 'nullable|string|max:20|unique:alumni,nim,' . $alumni->id,
-            'prodi'      => 'required|string|max:50',
-            'angkatan'   => 'nullable|integer|min:1950|max:' . date('Y'),
-            'lulusan'    => 'nullable|integer|min:1950|max:' . (date('Y') + 5),
-            'pekerjaan'  => 'nullable|string|max:100',
-            'perusahaan' => 'nullable|string|max:100',
-            'email'      => 'nullable|email|max:100',
-            'no_hp'      => 'nullable|string|max:20',
-            'alamat'     => 'nullable|string',
-            'foto'       => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'ijazah'     => 'nullable|file|mimes:pdf,jpeg,jpg,png|max:5120',
-            'transkrip'  => 'nullable|file|mimes:pdf,jpeg,jpg,png|max:5120',
-        ]);
-
-        $data = $request->except(['foto', 'ijazah', 'transkrip']);
-
-        // Foto
-        if ($request->hasFile('foto')) {
-            if ($alumni->foto) Storage::disk('public')->delete($alumni->foto);
-            $data['foto'] = $request->file('foto')->store('foto_alumni', 'public');
-        }
-
-        // Ijazah
-        if ($request->hasFile('ijazah')) {
-            if ($alumni->ijazah) Storage::disk('public')->delete($alumni->ijazah);
-            $data['ijazah'] = $request->file('ijazah')->store('ijazah', 'public');
-        }
-
-        // Transkrip
-        if ($request->hasFile('transkrip')) {
-            if ($alumni->transkrip) Storage::disk('public')->delete($alumni->transkrip);
-            $data['transkrip'] = $request->file('transkrip')->store('transkrip', 'public');
-        }
-
-        // Jika yang edit adalah user biasa (bukan admin), kembalikan status ke pending
-        if (auth()->user()->role != 'admin') {
-            $data['status']      = 'pending';
-            $data['approved_by'] = null;
-            $data['approved_at'] = null;
-        }
-        // Jika admin, status tetap seperti sebelumnya
-
-        $alumni->update($data);
-
-        return redirect()->route('alumni.s1.pgmi.show', $alumni->id)
-            ->with('success', 'Data berhasil diperbarui.');
-    }
-
-    /**
-     * HAPUS DATA (ADMIN ATAU PEMILIK)
-     */
-    public function destroy($id)
-    {
-        $alumni = Alumni::findOrFail($id);
-
-        // Hanya admin atau pemilik yang boleh hapus
-        if (auth()->user()->role != 'admin' && $alumni->user_id !== auth()->id()) {
-            abort(403);
-        }
-
-        // Hapus file-file terkait
-        if ($alumni->foto) {
-            Storage::disk('public')->delete($alumni->foto);
-        }
-        if ($alumni->ijazah) {
-            Storage::disk('public')->delete($alumni->ijazah);
-        }
-        if ($alumni->transkrip) {
-            Storage::disk('public')->delete($alumni->transkrip);
-        }
-
-        $alumni->delete();
-
-        return redirect()->route('alumni.s1.pgmi.index')
-            ->with('success', 'Data alumni berhasil dihapus.');
-    }
-
-    /**
-     * ===============================
-     * PROFIL ALUMNI (DATA MILIK SENDIRI)
-     * ===============================
-     */
-    public function profile()
-    {
-        $user = auth()->user();
-        $alumni = Alumni::where('user_id', $user->id)->get();
-
-        return view('alumni.profile', compact('alumni'));
-    }
-
-    /**
-     * ===============================
-     * ADMIN: LIST PENDING
-     * ===============================
-     */
-    public function pending()
-    {
-        $alumni = Alumni::where('status', 'pending')
-            ->with('user')
-            ->latest()
-            ->get();
-
-        return view('admin.alumni.pending', compact('alumni'));
-    }
-
-    /**
-     * ADMIN: APPROVE
-     */
-    public function approve($id)
-    {
-        $alumni = Alumni::findOrFail($id);
-
-        $alumni->update([
-            'status'      => 'approved',
-            'approved_by' => auth()->id(),
-            'approved_at' => now(),
-        ]);
-
-        return back()->with('success', 'Data alumni disetujui.');
-    }
-
-    /**
-     * ADMIN: REJECT
-     */
-    public function reject($id)
-    {
-        $alumni = Alumni::findOrFail($id);
-
-        $alumni->update([
-            'status'      => 'rejected',
-            'approved_by' => auth()->id(),
-            'approved_at' => now(),
-        ]);
-
-        return back()->with('error', 'Data alumni ditolak.');
-    }
-
-    /**
-     * DOWNLOAD TEMPLATE CSV (tanpa package Excel)
-     */
-    public function downloadTemplate()
-    {
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="template_alumni.csv"',
-        ];
-
-        $data = [
-            ['nama', 'nim', 'prodi', 'angkatan', 'lulusan', 'pekerjaan', 'perusahaan', 'email', 'no_hp', 'alamat'],
-            ['Contoh Nama Alumni', '123456789', 'PGMI', '2020', '2024', 'Guru', 'SDN 1 Tasikmalaya', 'email@example.com', '081234567890', 'Jl. Contoh No. 1, Tasikmalaya'],
-        ];
-
-        $callback = function() use ($data) {
-            $handle = fopen('php://output', 'w');
-            foreach ($data as $row) {
-                fputcsv($handle, $row);
-            }
-            fclose($handle);
-        };
-
-        return response()->stream($callback, 200, $headers);
-    }
-
-    /**
-     * IMPORT DATA ALUMNI DARI CSV/EXCEL
-     */
-    public function import(Request $request)
-    {
-        $request->validate([
-            'file' => 'required|mimes:csv,xlsx,xls'
-        ]);
-
-        // Untuk CSV manual processing
-        if ($request->file('file')->getClientOriginalExtension() === 'csv') {
-            try {
-                $handle = fopen($request->file('file')->getRealPath(), 'r');
-                $header = fgetcsv($handle);
-                
-                $imported = 0;
-                while (($row = fgetcsv($handle)) !== false) {
-                    $data = array_combine($header, $row);
-                    
-                    Alumni::create([
-                        'nama' => $data['nama'] ?? '',
-                        'nim' => $data['nim'] ?? null,
-                        'prodi' => $data['prodi'] ?? '',
-                        'angkatan' => $data['angkatan'] ?? null,
-                        'lulusan' => $data['lulusan'] ?? null,
-                        'pekerjaan' => $data['pekerjaan'] ?? null,
-                        'perusahaan' => $data['perusahaan'] ?? null,
-                        'email' => $data['email'] ?? null,
-                        'no_hp' => $data['no_hp'] ?? null,
-                        'alamat' => $data['alamat'] ?? null,
-                        'user_id' => auth()->id(),
-                        'status' => 'approved',
-                        'approved_by' => auth()->id(),
-                        'approved_at' => now(),
-                    ]);
-                    $imported++;
-                }
-                fclose($handle);
-
-                return back()->with('success', "Berhasil import $imported data alumni!");
-            } catch (\Exception $e) {
-                return back()->with('error', 'Gagal import: ' . $e->getMessage());
-            }
-        }
-
-        // Untuk Excel, butuh package maatwebsite/excel
-        // Jika belum install, tampilkan pesan error
-        return back()->with('error', 'Untuk import file Excel (.xlsx), please install package: composer require maatwebsite/excel');
     }
 }

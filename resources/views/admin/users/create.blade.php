@@ -36,7 +36,6 @@
         <div>
             <label class="block text-sm font-semibold mb-1">Role</label>
             <select name="role" class="w-full border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" required>
-                <option value="user" {{ old('role') == 'user' ? 'selected' : '' }}>User Biasa</option>
                 <option value="alumni" {{ old('role') == 'alumni' ? 'selected' : '' }}>Alumni</option>
                 <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
             </select>

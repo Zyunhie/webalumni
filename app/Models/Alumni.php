@@ -83,5 +83,15 @@ class Alumni extends Model
         // Jika path dari Storage (storage/app/public/)
         return Storage::url($this->transkrip);
     }
+
+    /**
+     * Relasi ke lamaran alumni
+     */
+    public function lamarans()
+    {
+        return $this->hasMany(Lamaran::class);
+    }
 }
+
+
 

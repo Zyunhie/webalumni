@@ -25,7 +25,8 @@
         </div>
     @endif
 
-action="{{ route('testimoni.store') }}"
+    {{-- FIX: form tag lengkap + enctype wajib untuk file upload --}}
+    <form method="POST" action="{{ route('testimoni.store') }}" enctype="multipart/form-data">
         @csrf
 
         <div class="space-y-6">
@@ -72,7 +73,15 @@ action="{{ route('testimoni.store') }}"
             <!-- Foto -->
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Foto Profil (Opsional)</label>
-                <div class="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:border-green-400 transition cursor-pointer group">
+
+                {{-- FIX: Preview area - hidden by default, muncul setelah pilih file --}}
+                <div id="foto-preview-wrapper" class="hidden mb-4 p-4 bg-gray-50 rounded-xl border-2 border-dashed border-green-300 text-center">
+                    <img id="foto-preview" src="" alt="Preview foto" class="w-32 h-32 object-cover rounded-2xl mx-auto">
+                    <p class="text-sm text-green-600 mt-2 font-semibold" id="foto-filename"></p>
+                    <button type="button" id="foto-remove" class="text-xs text-red-500 hover:text-red-700 mt-1">× Ganti foto</button>
+                </div>
+
+                <div id="foto-dropzone" class="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:border-green-400 transition cursor-pointer group">
                     <input type="file" name="foto" accept="image/*" class="hidden" id="foto-upload">
                     <label for="foto-upload" class="cursor-pointer">
                         <div class="group-hover:text-green-600 transition">
@@ -98,7 +107,7 @@ action="{{ route('testimoni.store') }}"
         </div>
 
         <div class="flex flex-col sm:flex-row gap-4 mt-12 pt-8 border-t border-gray-200">
-            <a href="{{ route('testimonials.index') }}" class="flex-1 sm:flex-none bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-8 py-4 rounded-xl text-center transition">
+            <a href="{{ route('testimoni.index') }}" class="flex-1 sm:flex-none bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-8 py-4 rounded-xl text-center transition">
                 ← Kembali ke Galeri
             </a>
             <button type="submit" class="flex-1 sm:flex-none bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1">
@@ -114,9 +123,41 @@ action="{{ route('testimoni.store') }}"
 </section>
 
 <script>
-document.getElementById('foto-upload').addEventListener('change', function(e) {
-    const fileName = e.target.files[0]?.name || 'Tidak ada file dipilih';
-    // Preview logic here if needed
-});
+    const fotoUpload      = document.getElementById('foto-upload');
+    const fotoPreview     = document.getElementById('foto-preview');
+    const fotoWrapper     = document.getElementById('foto-preview-wrapper');
+    const fotoDropzone    = document.getElementById('foto-dropzone');
+    const fotoFilename    = document.getElementById('foto-filename');
+    const fotoRemove      = document.getElementById('foto-remove');
+
+    fotoUpload.addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Validasi ukuran di sisi client (max 2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            alert('Ukuran file maksimal 2MB');
+            this.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            fotoPreview.src     = e.target.result;
+            fotoFilename.textContent = file.name;
+            fotoWrapper.classList.remove('hidden');
+            fotoDropzone.classList.add('hidden');
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // Tombol ganti foto — reset input dan tampilkan dropzone lagi
+    fotoRemove.addEventListener('click', function () {
+        fotoUpload.value    = '';
+        fotoPreview.src     = '';
+        fotoFilename.textContent = '';
+        fotoWrapper.classList.add('hidden');
+        fotoDropzone.classList.remove('hidden');
+    });
 </script>
 @endsection
