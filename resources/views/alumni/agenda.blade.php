@@ -18,21 +18,25 @@
         </div>
     @endif
 
-    <!-- Action Buttons -->
-    <div class="flex flex-col sm:flex-row gap-4 justify-between items-center mb-12 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-3xl shadow-lg border-4 border-blue-100">
-        <div class="text-center sm:text-left">
-            <h2 class="text-2xl font-bold text-gray-800 mb-1">Agenda Alumni IAIT</h2>
-            <p class="text-gray-600">Kelola agenda kegiatan ({{ $agendas->count() }})</p>
+    {{-- Admin-only actions --}}
+    @auth
+        @if(auth()->user()->is_admin)
+        <div class="flex flex-col sm:flex-row gap-4 justify-between items-center mb-12 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-3xl shadow-lg border-4 border-blue-100">
+            <div class="text-center sm:text-left">
+                <h2 class="text-2xl font-bold text-gray-800 mb-1">Agenda Alumni IAIT</h2>
+                <p class="text-gray-600">Kelola agenda kegiatan ({{ $agendas->count() }})</p>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button onclick="openDeleteAllModal()" class="px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-2xl shadow-lg transition-all flex items-center gap-2">
+                    <i class="bi bi-trash3-fill"></i> Hapus Semua
+                </button>
+                <button onclick="openCreateModal()" class="px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold rounded-2xl shadow-lg transition-all flex items-center gap-2">
+                    <i class="bi bi-plus-circle-fill"></i> Tambah
+                </button>
+            </div>
         </div>
-        <div class="flex flex-col sm:flex-row gap-3">
-            <button onclick="openDeleteAllModal()" class="px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-2xl shadow-lg transition-all flex items-center gap-2">
-                <i class="bi bi-trash3-fill"></i> Hapus Semua
-            </button>
-            <button onclick="openCreateModal()" class="px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold rounded-2xl shadow-lg transition-all flex items-center gap-2">
-                <i class="bi bi-plus-circle-fill"></i> Tambah
-            </button>
-        </div>
-    </div>
+        @endif
+    @endauth
 </div>
 
 <!-- Agenda Cards -->
@@ -41,15 +45,19 @@
     <div class="agenda-card border-2 border-gray-300 rounded-[24px] overflow-hidden transition-all duration-300 hover:shadow-xl cursor-pointer" onclick="toggleAgenda(this)">
         <div class="header p-6 flex items-center justify-between h-28 bg-white relative">
             <div class="flex items-center gap-3 flex-1">
-                <!-- Edit/Delete Buttons -->
-                <div class="flex gap-1">
-                    <button onclick="event.stopPropagation(); openEditModal({{ $agenda->id }})" class="w-10 h-10 bg-blue-500 hover:bg-blue-600 text-white rounded-lg flex items-center justify-center transition-all shadow-md hover:shadow-lg" title="Edit">
-                        <i class="bi bi-pencil-fill text-sm"></i>
-                    </button>
-                    <button onclick="event.stopPropagation(); confirmDelete({{ $agenda->id }})" class="w-10 h-10 bg-red-500 hover:bg-red-600 text-white rounded-lg flex items-center justify-center transition-all shadow-md hover:shadow-lg" title="Hapus">
-                        <i class="bi bi-trash-fill text-sm"></i>
-                    </button>
-                </div>
+                {{-- Admin-only edit/delete buttons --}}
+                @auth
+                    @if(auth()->user()->is_admin)
+                    <div class="flex gap-1">
+                        <button onclick="event.stopPropagation(); openEditModal({{ $agenda->id }})" class="w-10 h-10 bg-blue-500 hover:bg-blue-600 text-white rounded-lg flex items-center justify-center transition-all shadow-md hover:shadow-lg" title="Edit">
+                            <i class="bi bi-pencil-fill text-sm"></i>
+                        </button>
+                        <button onclick="event.stopPropagation(); confirmDelete({{ $agenda->id }})" class="w-10 h-10 bg-red-500 hover:bg-red-600 text-white rounded-lg flex items-center justify-center transition-all shadow-md hover:shadow-lg" title="Hapus">
+                            <i class="bi bi-trash-fill text-sm"></i>
+                        </button>
+                    </div>
+                    @endif
+                @endauth
                 <div class="flex-1">
                     <h3 class="font-bold text-xl text-gray-800 line-clamp-1 mb-1">{{ $agenda->judul }}</h3>
                     <span class="text-sm text-gray-500 flex items-center gap-1">
@@ -82,108 +90,123 @@
     <div class="text-center py-20">
         <i class="bi bi-calendar-x text-6xl text-gray-300 mb-6"></i>
         <h3 class="text-2xl font-bold text-gray-900 mb-2">Belum ada agenda</h3>
-        <p class="text-gray-600 mb-8">Klik "Tambah Agenda" untuk membuat yang pertama</p>
+        <p class="text-gray-600 mb-8">
+            @auth
+                @if(auth()->user()->is_admin)
+                    Klik "Tambah Agenda" untuk membuat yang pertama
+                @else
+                    Belum ada agenda yang tersedia.
+                @endif
+            @else
+                Belum ada agenda yang tersedia.
+            @endauth
+        </p>
     </div>
     @endforelse
 </section>
 
-<!-- Modals -->
-<div id="formModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4" onclick="closeModal(event)">
-    <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
-        <div class="p-8 border-b border-gray-200">
-            <h2 id="modalTitle" class="text-3xl font-bold text-gray-800 mb-2">Tambah Agenda</h2>
-            <p id="modalSubtitle" class="text-gray-600">Isi detail lengkap</p>
+{{-- Admin-only modals --}}
+@auth
+    @if(auth()->user()->is_admin)
+    <!-- Form Modal -->
+    <div id="formModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4" onclick="closeModal(event)">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+            <div class="p-8 border-b border-gray-200">
+                <h2 id="modalTitle" class="text-3xl font-bold text-gray-800 mb-2">Tambah Agenda</h2>
+                <p id="modalSubtitle" class="text-gray-600">Isi detail lengkap</p>
+            </div>
+            <form id="agendaForm" enctype="multipart/form-data" class="p-8 space-y-6">
+                @csrf
+                <input type="hidden" name="_method" id="methodField">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Judul <span class="text-red-500">*</span></label>
+                        <input type="text" name="judul" required id="judulField" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Mulai <span class="text-red-500">*</span></label>
+                        <input type="date" name="tanggal_mulai" required id="tanggalMulaiField" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Selesai</label>
+                        <input type="date" name="tanggal_selesai" id="tanggalSelesaiField" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Lokasi</label>
+                        <input type="text" name="lokasi" id="lokasiField" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Gambar</label>
+                    <input type="file" name="gambar" accept="image/*" id="gambarField" class="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl hover:border-green-300">
+                    <div id="currentImage" class="mt-2 p-4 bg-gray-50 rounded-xl hidden">
+                        <p class="text-sm text-gray-600 mb-2">Gambar saat ini:</p>
+                        <img id="currentImagePreview" class="max-w-full h-32 object-cover rounded-xl">
+                    </div>
+                </div>
+                <div class="col-span-full">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Deskripsi <span class="text-red-500">*</span></label>
+                    <textarea name="deskripsi" required rows="5" id="deskripsiField" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-vertical"></textarea>
+                </div>
+                <div class="flex gap-4 pt-6 border-t">
+                    <button type="button" onclick="closeFormModal()" class="flex-1 px-8 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-xl transition-all">
+                        Batal
+                    </button>
+                    <button type="submit" id="submitBtn" class="flex-1 px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold rounded-xl shadow-lg transition-all">
+                        Simpan
+                    </button>
+                </div>
+            </form>
         </div>
-        <form id="agendaForm" enctype="multipart/form-data" class="p-8 space-y-6">
-            @csrf
-            <input type="hidden" name="_method" id="methodField">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Judul <span class="text-red-500">*</span></label>
-                    <input type="text" name="judul" required id="judulField" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Mulai <span class="text-red-500">*</span></label>
-                    <input type="date" name="tanggal_mulai" required id="tanggalMulaiField" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Selesai</label>
-                    <input type="date" name="tanggal_selesai" id="tanggalSelesaiField" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Lokasi</label>
-                    <input type="text" name="lokasi" id="lokasiField" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500">
-                </div>
+    </div>
+
+    <!-- Delete Single Modal -->
+    <div id="deleteSingleModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4" onclick="closeDeleteSingleModal()">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 text-center" onclick="event.stopPropagation()">
+            <div class="w-20 h-20 bg-red-100 rounded-3xl mx-auto mb-6 flex items-center justify-center">
+                <i class="bi bi-exclamation-triangle text-3xl text-red-600"></i>
             </div>
-            <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Gambar</label>
-                <input type="file" name="gambar" accept="image/*" id="gambarField" class="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl hover:border-green-300">
-                <div id="currentImage" class="mt-2 p-4 bg-gray-50 rounded-xl hidden">
-                    <p class="text-sm text-gray-600 mb-2">Gambar saat ini:</p>
-                    <img id="currentImagePreview" class="max-w-full h-32 object-cover rounded-xl">
-                </div>
-            </div>
-            <div class="col-span-full">
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Deskripsi <span class="text-red-500">*</span></label>
-                <textarea name="deskripsi" required rows="5" id="deskripsiField" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-vertical"></textarea>
-            </div>
-            <div class="flex gap-4 pt-6 border-t">
-                <button type="button" onclick="closeFormModal()" class="flex-1 px-8 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-xl transition-all">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Hapus?</h3>
+            <p class="text-gray-600 mb-8">" <span id="deleteTitle"></span> " akan hilang permanen.</p>
+            <div class="flex gap-4">
+                <button onclick="closeDeleteSingleModal()" class="flex-1 px-8 py-3 bg-gray-200 hover:bg-gray-300 font-bold rounded-xl transition-all">
                     Batal
                 </button>
-                <button type="submit" id="submitBtn" class="flex-1 px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold rounded-xl shadow-lg transition-all">
-                    Simpan
-                </button>
+                <form id="deleteSingleForm" method="POST" style="display: contents;">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="flex-1 px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg transition-all">
+                        Hapus
+                    </button>
+                </form>
             </div>
-        </form>
+        </div>
     </div>
-</div>
 
-<!-- Delete Confirm Modal -->
-<div id="deleteSingleModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4" onclick="closeDeleteSingleModal()">
-    <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 text-center" onclick="event.stopPropagation()">
-        <div class="w-20 h-20 bg-red-100 rounded-3xl mx-auto mb-6 flex items-center justify-center">
-            <i class="bi bi-exclamation-triangle text-3xl text-red-600"></i>
-        </div>
-        <h3 class="text-2xl font-bold text-gray-800 mb-4">Hapus?</h3>
-        <p class="text-gray-600 mb-8">" <span id="deleteTitle"></span> " akan hilang permanen.</p>
-        <div class="flex gap-4">
-            <button onclick="closeDeleteSingleModal()" class="flex-1 px-8 py-3 bg-gray-200 hover:bg-gray-300 font-bold rounded-xl transition-all">
-                Batal
-            </button>
-            <form id="deleteSingleForm" method="POST" style="display: contents;">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="flex-1 px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg transition-all">
-                    Hapus
+    <!-- Delete All Modal -->
+    <div id="deleteAllModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4" onclick="closeDeleteAllModal()">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 text-center" onclick="event.stopPropagation()">
+            <div class="w-20 h-20 bg-red-100 rounded-3xl mx-auto mb-6 flex items-center justify-center">
+                <i class="bi bi-exclamation-triangle text-3xl text-red-600"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Hapus Semua?</h3>
+            <p class="text-gray-600 mb-8">Semua agenda akan hilang permanen.</p>
+            <div class="flex gap-4">
+                <button onclick="closeDeleteAllModal()" class="flex-1 px-8 py-3 bg-gray-200 hover:bg-gray-300 font-bold rounded-xl transition-all">
+                    Batal
                 </button>
-            </form>
+                <form action="{{ route('agenda.destroyAll') }}" method="POST" style="display: contents;">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="flex-1 px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg transition-all">
+                        Hapus Semua
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
-</div>
-
-<!-- Delete All Modal -->
-<div id="deleteAllModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4" onclick="closeDeleteAllModal()">
-    <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 text-center" onclick="event.stopPropagation()">
-        <div class="w-20 h-20 bg-red-100 rounded-3xl mx-auto mb-6 flex items-center justify-center">
-            <i class="bi bi-exclamation-triangle text-3xl text-red-600"></i>
-        </div>
-        <h3 class="text-2xl font-bold text-gray-800 mb-4">Hapus Semua?</h3>
-        <p class="text-gray-600 mb-8">Semua agenda akan hilang permanen.</p>
-        <div class="flex gap-4">
-            <button onclick="closeDeleteAllModal()" class="flex-1 px-8 py-3 bg-gray-200 hover:bg-gray-300 font-bold rounded-xl transition-all">
-                Batal
-            </button>
-            <form action="{{ route('agenda.destroyAll') }}" method="POST" style="display: contents;">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="flex-1 px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg transition-all">
-                    Hapus Semua
-                </button>
-            </form>
-        </div>
-    </div>
-</div>
+    @endif
+@endauth
 
 <script>
 function toggleAgenda(card) {
@@ -217,123 +240,125 @@ function toggleAgenda(card) {
     }
 }
 
-function openEditModal(id) {
-    fetch(`/alumni/agenda/${id}`)
-        .then(r => {
-            if (!r.ok) throw new Error('Failed to fetch agenda: ' + r.status);
-            return r.json();
-        })
-        .then(d => {
-            document.getElementById('judulField').value = d.judul || '';
-            document.getElementById('lokasiField').value = d.lokasi || '';
-            document.getElementById('tanggalMulaiField').value = d.tanggal_mulai ? d.tanggal_mulai.split(' ')[0] : '';
-            document.getElementById('tanggalSelesaiField').value = d.tanggal_selesai ? d.tanggal_selesai.split(' ')[0] : '';
-            document.getElementById('deskripsiField').value = d.deskripsi || '';
+@auth
+    @if(auth()->user()->is_admin)
+    function openEditModal(id) {
+        fetch(`/alumni/agenda/${id}`)
+            .then(r => {
+                if (!r.ok) throw new Error('Failed to fetch agenda: ' + r.status);
+                return r.json();
+            })
+            .then(d => {
+                document.getElementById('judulField').value = d.judul || '';
+                document.getElementById('lokasiField').value = d.lokasi || '';
+                document.getElementById('tanggalMulaiField').value = d.tanggal_mulai ? d.tanggal_mulai.split(' ')[0] : '';
+                document.getElementById('tanggalSelesaiField').value = d.tanggal_selesai ? d.tanggal_selesai.split(' ')[0] : '';
+                document.getElementById('deskripsiField').value = d.deskripsi || '';
+                
+                // Show current image
+                if (d.gambar) {
+                    document.getElementById('currentImage').classList.remove('hidden');
+                    document.getElementById('currentImagePreview').src = '{{ asset("storage/") }}' + '/' + d.gambar;
+                } else {
+                    document.getElementById('currentImage').classList.add('hidden');
+                }
+                
+                document.getElementById('agendaForm').action = `/alumni/agenda/${id}`;
+                document.getElementById('methodField').value = 'PUT';
+                document.getElementById('modalTitle').textContent = 'Edit "' + (d.judul || 'Agenda') + '"';
+                document.getElementById('submitBtn').textContent = 'Update';
+                document.getElementById('formModal').classList.remove('hidden');
+            })
+            .catch(error => {
+                console.error('Edit error:', error);
+                alert('Gagal load data agenda: ' + error.message);
+            });
+    }
+
+    function confirmDelete(id) {
+        let card = document.querySelector(`.agenda-card button[onclick*="${id}"]`)?.closest('.agenda-card');
+        const title = card ? card.querySelector('h3').textContent : 'Agenda ini';
+        document.getElementById('deleteTitle').textContent = title;
+        document.getElementById('deleteSingleForm').action = `/alumni/agenda/${id}`;
+        document.getElementById('deleteSingleModal').classList.remove('hidden');
+    }
+
+    function openCreateModal() {
+        document.getElementById('modalTitle').textContent = 'Tambah Agenda';
+        document.getElementById('submitBtn').textContent = 'Tambah';
+        document.getElementById('agendaForm').action = "{{ route('alumni.agenda.store') }}";
+        document.getElementById('methodField').value = '';
+        document.getElementById('currentImage').classList.add('hidden');
+        document.getElementById('agendaForm').reset();
+        document.getElementById('formModal').classList.remove('hidden');
+    }
+
+    // AJAX form submit
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('agendaForm').addEventListener('submit', function(e) {
+            e.preventDefault();
             
-            // Show current image
-            if (d.gambar) {
-                document.getElementById('currentImage').classList.remove('hidden');
-                document.getElementById('currentImagePreview').src = '{{ asset("storage/") }}' + '/' + d.gambar;
-            } else {
-                document.getElementById('currentImage').classList.add('hidden');
-            }
+            const formData = new FormData(this);
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Menyimpan...';
+            submitBtn.disabled = true;
             
-            document.getElementById('agendaForm').action = `/alumni/agenda/${id}`;
-            document.getElementById('methodField').value = 'PUT';
-            document.getElementById('modalTitle').textContent = 'Edit "' + (d.judul || 'Agenda') + '"';
-            document.getElementById('submitBtn').textContent = 'Update';
-            document.getElementById('formModal').classList.remove('hidden');
-        })
-        .catch(error => {
-            console.error('Edit error:', error);
-            alert('Gagal load data agenda: ' + error.message);
-        });
-}
-
-function confirmDelete(id) {
-    // Fallback for older browsers without :has()
-    let card = document.querySelector(`.agenda-card button[onclick*="${id}"]`)?.closest('.agenda-card');
-    const title = card ? card.querySelector('h3').textContent : 'Agenda ini';
-    document.getElementById('deleteTitle').textContent = title;
-    document.getElementById('deleteSingleForm').action = `/alumni/agenda/${id}`;
-    document.getElementById('deleteSingleModal').classList.remove('hidden');
-}
-
-function openCreateModal() {
-    document.getElementById('modalTitle').textContent = 'Tambah Agenda';
-    document.getElementById('submitBtn').textContent = 'Tambah';
-    document.getElementById('agendaForm').action = "{{ route('alumni.agenda.store') }}";
-    document.getElementById('methodField').value = '';
-    document.getElementById('currentImage').classList.add('hidden');
-    document.getElementById('agendaForm').reset();
-    document.getElementById('formModal').classList.remove('hidden');
-}
-
-// AJAX form submit (FIXED: CSRF token included)
-document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('agendaForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const formData = new FormData(this);
-        const submitBtn = document.getElementById('submitBtn');
-        const originalText = submitBtn.textContent;
-        submitBtn.textContent = 'Menyimpan...';
-        submitBtn.disabled = true;
-        
-        // Get CSRF token from meta tag
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-        
-        fetch(this.action, {
-            method: 'POST', // Always POST because we use _method spoofing
-            body: formData,
-            headers: {
-                'X-CSRF-TOKEN': csrfToken,
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.text().then(text => {
-                    throw new Error(`Server error: ${response.status} - ${text}`);
-                });
-            }
-            return response.text();
-        })
-        .then(() => {
-            location.reload(); // Refresh to show updated list
-        })
-        .catch(error => {
-            console.error('Submit error:', error);
-            alert('Gagal simpan: ' + error.message);
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        throw new Error(`Server error: ${response.status} - ${text}`);
+                    });
+                }
+                return response.text();
+            })
+            .then(() => {
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Submit error:', error);
+                alert('Gagal simpan: ' + error.message);
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            });
         });
     });
-});
 
-function closeModal(e) { 
-    if (e) e.stopPropagation(); 
-    document.getElementById('formModal').classList.add('hidden');
-    document.getElementById('deleteSingleModal').classList.add('hidden');
-    document.getElementById('deleteAllModal').classList.add('hidden');
-    document.getElementById('agendaForm').reset();
-    document.getElementById('currentImage').classList.add('hidden');
-}
+    function closeModal(e) { 
+        if (e) e.stopPropagation(); 
+        document.getElementById('formModal').classList.add('hidden');
+        document.getElementById('deleteSingleModal').classList.add('hidden');
+        document.getElementById('deleteAllModal').classList.add('hidden');
+        document.getElementById('agendaForm').reset();
+        document.getElementById('currentImage').classList.add('hidden');
+    }
 
-function closeFormModal() {
-    closeModal();
-}
+    function closeFormModal() {
+        closeModal();
+    }
 
-function closeDeleteSingleModal() {
-    document.getElementById('deleteSingleModal').classList.add('hidden');
-}
+    function closeDeleteSingleModal() {
+        document.getElementById('deleteSingleModal').classList.add('hidden');
+    }
 
-function closeDeleteAllModal() {
-    document.getElementById('deleteAllModal').classList.add('hidden');
-}
+    function closeDeleteAllModal() {
+        document.getElementById('deleteAllModal').classList.add('hidden');
+    }
 
-function openDeleteAllModal() { 
-    document.getElementById('deleteAllModal').classList.remove('hidden'); 
-}
+    function openDeleteAllModal() { 
+        document.getElementById('deleteAllModal').classList.remove('hidden'); 
+    }
+    @endif
+@endauth
 </script>
 @endsection

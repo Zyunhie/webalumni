@@ -20,7 +20,7 @@ use App\Http\Controllers\KontakController;
 
 // Home
 Route::get('/', function () {
-    return view('dashboard');
+    return view('welcome');
 })->name('home');
 
 // Tentang & Kontak
@@ -37,7 +37,7 @@ Route::post('/kontak', [KontakController::class, 'store'])->name('kontak.store')
 Route::view('/alumni/data', 'alumni.data')->name('alumni.data');
 Route::view('/alumni/testimoni', 'alumni.testimoni')->name('alumni.testimoni');
 Route::get('/alumni/agenda', [AgendaController::class, 'index'])->name('alumni.agenda');
-Route::get('/alumni/agenda/{agenda}', [AgendaController::class, 'show'])->name('alumni.agenda.show')->middleware('auth');
+Route::get('/alumni/agenda/{agenda}', [AgendaController::class, 'show'])->name('alumni.agenda.show');
 Route::get('/alumni/agenda/{agenda}/edit', [AgendaController::class, 'edit'])->name('alumni.agenda.edit')->middleware('auth');
 Route::put('/alumni/agenda/{agenda}', [AgendaController::class, 'update'])->name('alumni.agenda.update')->middleware('auth');
 Route::delete('/alumni/agenda/{agenda}', [AgendaController::class, 'destroy'])->name('alumni.agenda.destroy')->middleware('auth');
@@ -76,7 +76,7 @@ Route::prefix('alumni/s1/pgmi')
         Route::get('/', [AlumniController::class, 'index'])->name('index');
         Route::get('/create', [AlumniController::class, 'create'])->name('create');
         Route::post('/', [AlumniController::class, 'store'])->name('store');
-        Route::get('/{id}', [AlumniController::class, 'show'])->middleware('auth')->name('show');
+        Route::get('/{id}', [AlumniController::class, 'show'])->name('show');
         Route::get('/{id}/edit', [AlumniController::class, 'edit'])->name('edit');
         Route::put('/{id}', [AlumniController::class, 'update'])->name('update');
         Route::delete('/{id}', [AlumniController::class, 'destroy'])->name('destroy');
@@ -91,7 +91,7 @@ Route::prefix('alumni/s1/pai')
         Route::get('/', [AlumniController::class, 'index'])->name('index');
         Route::get('/create', [AlumniController::class, 'create'])->name('create');
         Route::post('/', [AlumniController::class, 'store'])->name('store');
-        Route::get('/{id}', [AlumniController::class, 'show'])->middleware('auth')->name('show');
+        Route::get('/{id}', [AlumniController::class, 'show'])->name('show');
         Route::get('/{id}/edit', [AlumniController::class, 'edit'])->name('edit');
         Route::put('/{id}', [AlumniController::class, 'update'])->name('update');
         Route::delete('/{id}', [AlumniController::class, 'destroy'])->name('destroy');
@@ -106,7 +106,7 @@ Route::prefix('alumni/s1/piaud')
         Route::get('/', [AlumniController::class, 'index'])->name('index');
         Route::get('/create', [AlumniController::class, 'create'])->name('create');
         Route::post('/', [AlumniController::class, 'store'])->name('store');
-        Route::get('/{id}', [AlumniController::class, 'show'])->middleware('auth')->name('show');
+        Route::get('/{id}', [AlumniController::class, 'show'])->name('show');
         Route::get('/{id}/edit', [AlumniController::class, 'edit'])->name('edit');
         Route::put('/{id}', [AlumniController::class, 'update'])->name('update');
         Route::delete('/{id}', [AlumniController::class, 'destroy'])->name('destroy');
@@ -121,7 +121,7 @@ Route::prefix('alumni/s1/mpi')
         Route::get('/', [AlumniController::class, 'index'])->name('index');
         Route::get('/create', [AlumniController::class, 'create'])->name('create');
         Route::post('/', [AlumniController::class, 'store'])->name('store');
-        Route::get('/{id}', [AlumniController::class, 'show'])->middleware('auth')->name('show');
+        Route::get('/{id}', [AlumniController::class, 'show'])->name('show');
         Route::get('/{id}/edit', [AlumniController::class, 'edit'])->name('edit');
         Route::put('/{id}', [AlumniController::class, 'update'])->name('update');
         Route::delete('/{id}', [AlumniController::class, 'destroy'])->name('destroy');
@@ -136,7 +136,7 @@ Route::prefix('alumni/s1/bkpi')
         Route::get('/', [AlumniController::class, 'index'])->name('index');
         Route::get('/create', [AlumniController::class, 'create'])->name('create');
         Route::post('/', [AlumniController::class, 'store'])->name('store');
-        Route::get('/{id}', [AlumniController::class, 'show'])->middleware('auth')->name('show');
+        Route::get('/{id}', [AlumniController::class, 'show'])->name('show');
         Route::get('/{id}/edit', [AlumniController::class, 'edit'])->name('edit');
         Route::put('/{id}', [AlumniController::class, 'update'])->name('update');
         Route::delete('/{id}', [AlumniController::class, 'destroy'])->name('destroy');
@@ -151,7 +151,7 @@ Route::prefix('alumni/s1/eksyar')
         Route::get('/', [AlumniController::class, 'index'])->name('index');
         Route::get('/create', [AlumniController::class, 'create'])->name('create');
         Route::post('/', [AlumniController::class, 'store'])->name('store');
-        Route::get('/{id}', [AlumniController::class, 'show'])->middleware('auth')->name('show');
+        Route::get('/{id}', [AlumniController::class, 'show'])->name('show');
         Route::get('/{id}/edit', [AlumniController::class, 'edit'])->name('edit');
         Route::put('/{id}', [AlumniController::class, 'update'])->name('update');
         Route::delete('/{id}', [AlumniController::class, 'destroy'])->name('destroy');
@@ -166,7 +166,7 @@ Route::prefix('alumni/s1/as')
         Route::get('/', [AlumniController::class, 'index'])->name('index');
         Route::get('/create', [AlumniController::class, 'create'])->name('create');
         Route::post('/', [AlumniController::class, 'store'])->name('store');
-        Route::get('/{id}', [AlumniController::class, 'show'])->middleware('auth')->name('show');
+        Route::get('/{id}', [AlumniController::class, 'show'])->name('show');
         Route::get('/{id}/edit', [AlumniController::class, 'edit'])->name('edit');
         Route::put('/{id}', [AlumniController::class, 'update'])->name('update');
         Route::delete('/{id}', [AlumniController::class, 'destroy'])->name('destroy');
@@ -181,7 +181,7 @@ Route::prefix('alumni/s1/htn')
         Route::get('/', [AlumniController::class, 'index'])->name('index');
         Route::get('/create', [AlumniController::class, 'create'])->name('create');
         Route::post('/', [AlumniController::class, 'store'])->name('store');
-        Route::get('/{id}', [AlumniController::class, 'show'])->middleware('auth')->name('show');
+        Route::get('/{id}', [AlumniController::class, 'show'])->name('show');
         Route::get('/{id}/edit', [AlumniController::class, 'edit'])->name('edit');
         Route::put('/{id}', [AlumniController::class, 'update'])->name('update');
         Route::delete('/{id}', [AlumniController::class, 'destroy'])->name('destroy');
@@ -196,7 +196,7 @@ Route::prefix('alumni/s2/pai')
         Route::get('/', [AlumniController::class, 'index'])->name('index');
         Route::get('/create', [AlumniController::class, 'create'])->name('create');
         Route::post('/', [AlumniController::class, 'store'])->name('store');
-        Route::get('/{id}', [AlumniController::class, 'show'])->middleware('auth')->name('show');
+        Route::get('/{id}', [AlumniController::class, 'show'])->name('show');
         Route::get('/{id}/edit', [AlumniController::class, 'edit'])->name('edit');
         Route::put('/{id}', [AlumniController::class, 'update'])->name('update');
         Route::delete('/{id}', [AlumniController::class, 'destroy'])->name('destroy');
@@ -222,9 +222,7 @@ Route::middleware('auth')->group(function () {
 
 // Berita
 Route::get('/berita', [BeritaController::class, 'index'])->name('berita.index');
-Route::get('/berita/{id}', [BeritaController::class, 'show'])
-    ->middleware('auth')
-    ->name('berita.show');
+Route::get('/berita/{id}', [BeritaController::class, 'show'])->name('berita.show');
 
 // Agenda
 Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda.index');
@@ -265,6 +263,7 @@ Route::middleware(['auth', 'role:admin'])
     ->name('admin.')
     ->group(function () {
 
+    Route::post('login', [AuthenticatedSessionController::class, 'store'])->name('login.store');
         // Dashboard admin
         Route::get('/dashboard', function () {
             return view('dashboard');
@@ -327,3 +326,4 @@ Route::middleware(['auth', 'role:admin'])
 Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
 Route::post('/login', [AuthenticatedSessionController::class, 'store'])->name('login.store');
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+

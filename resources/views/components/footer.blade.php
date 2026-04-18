@@ -10,13 +10,13 @@
         </div>
 
         <!-- Link -->
-        <div>
+        <div class="footer-links-sticky">
             <h2 class="font-bold mb-2">LINK</h2>
             <ul class="space-y-1">
-                <li><a href="/" class="hover:text-orange-400">Beranda</a></li>
-                <li><a href="/tentang" class="hover:text-orange-400">Tentang</a></li>
-                <li><a href="/alumni" class="hover:text-orange-400">Data Alumni</a></li>
-                <li><a href="/berita" class="hover:text-orange-400">Berita</a></li>
+<li><a href="/" class="footer-link no-underline">Beranda</a></li>
+<li><a href="/tentang" class="footer-link no-underline">Tentang</a></li>
+<li><a href="/alumni" class="footer-link no-underline">Data Alumni</a></li>
+<li><a href="/berita" class="footer-link no-underline">Berita</a></li>
             </ul>
         </div>
 

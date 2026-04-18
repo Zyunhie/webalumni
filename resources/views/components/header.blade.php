@@ -5,20 +5,20 @@
             <!-- Left: Logo + Navigation -->
             <div class="flex items-center space-x-4">
                 <!-- Logo with hover -->
-                <a href="{{ route('dashboard') }}" class="group">
+<a href="{{ route('home') }}" class="group">
                     <img src="{{ asset('images/Logo.png') }}" alt="Logo IAIT" 
                          class="h-12 w-auto transition-all duration-300 group-hover:scale-110 group-hover:-rotate-3 shadow-lg rounded-xl">
                 </a>
 
                 <!-- Desktop Menu -->
                 <div class="hidden md:flex space-x-6">
-                    <a href="{{ route('dashboard') }}"
+                    <a href="{{ route('home') }}"
                        class="group relative px-3 py-2 text-white font-medium text-sm rounded-lg transition-all duration-300 hover:bg-white/20 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0">
-                        <span class="{{ request()->routeIs('dashboard') ? 'underline underline-offset-4' : '' }}">Beranda</span>
+                        <span class="{{ request()->routeIs('home*', 'dashboard') ? 'underline underline-offset-4' : '' }}">Beranda</span>
                         <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-white/0 group-hover:bg-white transition-all duration-300"></div>
                     </a>
 
-                    <a href="{{ auth()->check() ? route('tentang') : route('login') }}"
+                    <a href="{{ route('tentang') }}"
                        class="group relative px-3 py-2 text-white font-medium text-sm rounded-lg transition-all duration-300 hover:bg-white/20 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0">
                         <span class="{{ request()->routeIs('tentang') ? 'underline underline-offset-4' : '' }}">Tentang</span>
                         <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-white/0 group-hover:bg-white transition-all duration-300"></div>
@@ -42,7 +42,7 @@
                              x-transition:leave-start="transform opacity-100 scale-100"
                              x-transition:leave-end="transform opacity-0 scale-95"
                              class="absolute left-0 mt-1 w-64 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/50 z-50 -translate-x-4 md:translate-x-0">
-                            <a href="{{ auth()->check() ? route('alumni.data') : route('login') }}" 
+                            <a href="{{ route('alumni.data') }}" 
                                class="block px-6 py-3 text-gray-900 hover:bg-green-50 hover:text-green-700 font-medium transition-all duration-200 first:rounded-t-2xl last:rounded-b-2xl">
                                 Data Alumni
                             </a>
@@ -50,7 +50,7 @@
                                class="block px-6 py-3 text-gray-900 hover:bg-green-50 hover:text-green-700 font-medium transition-all duration-200">
                                 Testimoni
                             </a>
-                            <a href="{{ auth()->check() ? route('alumni.agenda') : route('login') }}" 
+                            <a href="{{ route('alumni.agenda') }}" 
                                class="block px-6 py-3 text-gray-900 hover:bg-green-50 hover:text-green-700 font-medium transition-all duration-200 last:rounded-b-2xl">
                                 Agenda
                             </a>

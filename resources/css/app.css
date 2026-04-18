@@ -2,4 +2,56 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Animated underline for footer links */
+.footer-link {
+  position: relative;
+  display: inline-block;
+  color: white;
+  text-decoration: none;
+  transition: color 0.5s ease, letter-spacing 0.5s ease;
+}
+
+.footer-link:hover {
+  color: #f97316; /* Tailwind orange-400 */
+  letter-spacing: 0.05em;
+}
+
+.footer-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, transparent, #f97316, transparent);
+  transform-origin: center;
+  transform: translateX(-50%) scaleX(0);
+  transition: transform 0.5s ease-out;
+}
+
+.footer-link:hover::after {
+  transform: translateX(-50%) scaleX(1);
+}
+
+/* Sticky footer links section */
+.footer-links-sticky {
+  position: sticky;
+  bottom: 10px;
+  margin-bottom: 10px;
+  z-index: 10;
+  background-color: #166534; /* green-900 */
+  padding: 1rem;
+  border-radius: 0.5rem;
+}
+
+/* Struktur image card */
+.struktur-card {
+  transition: all 0.5s ease;
+}
+
+.struktur-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
 

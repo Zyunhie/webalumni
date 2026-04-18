@@ -33,33 +33,4 @@
             @endforeach
         </div>
     </section>
-
-    <!-- Lowongan Pekerjaan -->
-    <section class="max-w-6xl mx-auto px-6 py-12">
-        <h2 class="text-2xl font-bold text-gray-800 mb-6">Lowongan Pekerjaan</h2>
-
-        <div class="grid md:grid-cols-2 gap-8">
-            <div class="bg-white shadow rounded-2xl overflow-hidden">
-                <img src="{{ asset('images/LK.jpeg') }}" class="w-full object-cover h-96" alt="Lowongan 1">
-                <div class="p-4 text-center">
-                    <h4 class="font-bold text-lg">Accounting</h4>
-                    <p class="text-sm text-gray-500">PERBARINDO Indonesia</p>
-                </div>
-            </div>
-            <div class="bg-white shadow rounded-2xl overflow-hidden">
-                <img src="{{ asset('images/LK.jpeg') }}" class="w-full object-cover h-96" alt="Lowongan 2">
-                <div class="p-4 text-center">
-                    <h4 class="font-bold text-lg">Accounting</h4>
-                    <p class="text-sm text-gray-500">PERBARINDO Indonesia</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="text-center mt-8">
-            <a href="{{ route('lowongan.index') }}"
-                class="inline-block bg-yellow-500 text-white px-6 py-3 rounded-full font-semibold hover:bg-yellow-400 transition">
-                Selengkapnya...
-            </a>
-        </div>
-    </section>
 @endsection

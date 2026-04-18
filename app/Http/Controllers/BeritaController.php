@@ -10,8 +10,7 @@ class BeritaController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth');
-        $this->middleware('role:admin')->except(['index', 'show']);
+$this->middleware('auth')->except(['index', 'show']);
     }
 
     // Halaman publik daftar berita

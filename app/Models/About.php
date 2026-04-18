@@ -13,5 +13,6 @@ class About extends Model
         'visi',
         'misi',
         'struktur_image',
+        'deskripsi_singkat',
     ];
 }

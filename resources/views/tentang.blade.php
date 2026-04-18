@@ -10,7 +10,7 @@
     <div class="absolute inset-0 bg-black bg-opacity-40 flex flex-col justify-center items-center">
         <h1 class="text-4xl font-bold">Tentang Kami</h1>
         <p class="mt-2 text-sm">
-            <a href="{{ route('dashboard') }}" class="hover:underline">Beranda</a> &gt; Tentang
+            <a href="{{ route('dashboard') }}" class="hover:underline">Beranda</a> > Tentang
         </p>
     </div>
 </section>
