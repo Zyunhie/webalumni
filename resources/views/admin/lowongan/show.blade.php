@@ -58,6 +58,15 @@
         </div>
     </div>
 
+    {{-- Gambar Lowongan (jika ada) --}}
+    @if($lowongan->gambar)
+        <div class="mb-6">
+            <img src="{{ asset('storage/' . $lowongan->gambar) }}" 
+                 alt="Gambar {{ $lowongan->judul }}" 
+                 class="w-full max-h-96 object-cover rounded-lg shadow-md">
+        </div>
+    @endif
+
     {{-- Status Badge --}}
     <div class="mb-6">
         @if($lowongan->status == 'approved')

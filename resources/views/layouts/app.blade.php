@@ -12,12 +12,15 @@
     <link rel="icon" type="image/png" href="{{ asset('images/logo-iait.png') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('styles')
 </head>
 
 <body class="font-sans antialiased flex flex-col min-h-screen bg-gray-100">
@@ -32,6 +35,7 @@
 
     {{-- Footer --}}
     @include('components.footer')
-
+    @stack('scripts')
 </body>
+
 </html>

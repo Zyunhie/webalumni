@@ -3,406 +3,582 @@
 @section('title', 'Beranda - Alumni IAIT')
 
 @push('styles')
-    {{-- Swiper CSS --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <style>
-        /* === GLOBAL SLIDER STYLING (BIAR RAPI) === */
-        .slider-section {
+        /* HERO */
+        .hero-wrap {
+            position: relative;
+            width: 100%;
+            height: 400px;
             overflow: hidden;
-            padding: 0 4px;
-            margin: 0 -4px;
         }
 
-        .swiper {
-            overflow: visible !important;
-            padding: 10px 0 20px 0 !important; /* Ruang buat shadow & pagination */
-        }
-
-        /* Lebar card tetap, tidak melebar */
-        .swiper-slide {
-            width: 300px !important;
-            height: auto;
-            box-sizing: border-box;
-        }
-
-        @media (max-width: 640px) {
-            .swiper-slide {
-                width: 260px !important;
-            }
-        }
-
-        /* === CARD STYLING UNIFORM (BIAR SEMUA SECTION SAMA TINGGINYA) === */
-        .uniform-card {
-            background: white;
-            border-radius: 1rem;
-            overflow: hidden;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-            transition: all 0.2s ease;
+        .heroSwiper,
+        .heroSwiper .swiper-wrapper,
+        .heroSwiper .swiper-slide {
+            width: 100%;
             height: 100%;
+        }
+
+        .heroSwiper .swiper-slide {
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .heroSwiper .swiper-button-prev,
+        .heroSwiper .swiper-button-next {
+            color: #fff !important;
+        }
+
+        .heroSwiper .swiper-pagination-bullet-active {
+            background: #fff !important;
+        }
+
+        /* SECTION HEADER */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 1.25rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .section-bar {
+            width: 3rem;
+            height: 3px;
+            background: #16a34a;
+            margin-top: 0.35rem;
+        }
+
+        .scroll-nav {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        .scroll-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1.5px solid #16a34a;
+            background: #fff;
+            color: #16a34a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all .15s;
+            flex-shrink: 0;
+        }
+
+        .scroll-btn:hover {
+            background: #16a34a;
+            color: #fff;
+        }
+
+        /* SCROLL TRACK */
+        .cards-track {
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            overflow-y: visible;
+            padding: 0.5rem 0 1rem;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            align-items: stretch;
+        }
+
+        .cards-track::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* CARD BASE */
+        .card {
+            flex: 0 0 200px;
+            scroll-snap-align: start;
+            background: #fff;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+            transition: transform .2s, box-shadow .2s;
             display: flex;
             flex-direction: column;
-            border: 1px solid rgba(0,0,0,0.03);
-        }
-        .uniform-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            text-decoration: none;
+            color: inherit;
         }
 
-        /* Gambar dalam card (Agenda & Berita) */
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.11);
+        }
+
         .card-img {
             width: 100%;
-            height: 160px;
+            height: 110px;
             object-fit: cover;
-            background-color: #f3f4f6;
+            flex-shrink: 0;
         }
 
-        /* Konten dalam card */
-        .card-content {
-            padding: 1.25rem;
+        .card-img-ph {
+            width: 100%;
+            height: 110px;
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #86efac;
+            flex-shrink: 0;
+        }
+
+        .card-body {
+            padding: 0.75rem;
             flex: 1;
             display: flex;
             flex-direction: column;
+            gap: 0.25rem;
         }
 
-        /* Pagination styling */
-        .swiper-pagination {
-            position: relative !important;
-            margin-top: 1.5rem !important;
-            bottom: auto !important;
-        }
-        .swiper-pagination-bullet-active {
-            background-color: #16a34a !important; /* green-600 */
+        .card-title {
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: #1f2937;
+            line-height: 1.3;
+            word-break: break-word;
+            overflow-wrap: break-word;
         }
 
-        /* Hero navigation */
-        .heroSwiper .swiper-button-prev,
-        .heroSwiper .swiper-button-next {
-            color: white !important;
+        .card-meta {
+            font-size: 0.68rem;
+            color: #9ca3af;
         }
-        
-        /* Line clamp utility */
-        .line-clamp-3 {
+
+        .card-green {
+            font-size: 0.68rem;
+            color: #16a34a;
+            font-weight: 600;
+        }
+
+        .card-desc {
+            font-size: 0.7rem;
+            color: #6b7280;
+            line-height: 1.4;
+            flex: 1;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .clamp2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .clamp3 {
             display: -webkit-box;
             -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
 
-        /* Testimoni Avatar */
+        /* TESTIMONI CARD */
+        .testi-card {
+            flex: 0 0 200px;
+            height: 220px;
+            scroll-snap-align: start;
+            background: #fff;
+            border-radius: 0.75rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            padding: 0.85rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            transition: transform .2s, box-shadow .2s;
+            text-decoration: none;
+            color: inherit;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .testi-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.11);
+        }
+
         .testi-avatar {
-            width: 48px;
-            height: 48px;
+            width: 32px;
+            height: 32px;
             border-radius: 9999px;
             object-fit: cover;
             border: 2px solid #e5e7eb;
+            flex-shrink: 0;
         }
 
-        /* Lowongan border accent */
-        .lowongan-accent {
-            border-left: 5px solid #22c55e;
+        .lowongan-card {
+            border-left: 3px solid #22c55e;
+        }
+
+        /* SEE MORE */
+        .card-more {
+            flex: 0 0 120px;
+            scroll-snap-align: start;
+            border-radius: 0.75rem;
+            border: 2px dashed #bbf7d0;
+            background: #f0fdf4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            color: #16a34a;
+            font-weight: 600;
+            font-size: 0.72rem;
+            text-align: center;
+            text-decoration: none;
+            padding: 1rem 0.75rem;
+            transition: all .2s;
+        }
+
+        .card-more:hover {
+            background: #dcfce7;
+            border-color: #16a34a;
+            transform: translateY(-3px);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.62rem;
+            font-weight: 600;
+            background: #dcfce7;
+            color: #166534;
         }
     </style>
 @endpush
 
 @section('content')
-<div class="bg-gray-50">
+    <div class="bg-gray-50">
 
-    {{-- 1. HERO CAROUSEL FULL GAMBAR --}}
-<section class="relative">
-    <div class="swiper heroSwiper h-screen">
-        <div class="swiper-wrapper">
-            {{-- Slide 1 --}}
-            <div class="swiper-slide">
-                <div class="relative w-full h-full bg-cover bg-center" style="background-image: url('{{ asset('images/branda.jpg') }}')">
-                    {{-- Overlay sangat tipis hanya untuk teks, bisa diatur opacity 0.2 --}}
-                    <div class="absolute inset-0 bg-black/20"></div>
-                    <div class="relative z-10 h-full flex items-center justify-center text-white text-center px-4">
-                        <div class="max-w-4xl" style="text-shadow: 2px 2px 8px rgba(0,0,0,0.7);">
-                            <h1 class="text-3xl md:text-5xl font-bold mb-4">SELAMAT DATANG DI WEBSITE ALUMNI</h1>
-                            <h2 class="text-xl md:text-2xl mb-6">INSTITUT AGAMA ISLAM TASIKMALAYA</h2>
-                            <p class="text-lg">Temukan teman satu angkatan, ikuti event serta bangun koneksi bersama Alumni!</p>
-                        </div>
-                    </div>
+        {{-- HERO — pure image, zero text --}}
+        <div class="hero-wrap">
+            <div class="swiper heroSwiper">
+                <div class="swiper-wrapper">
+                    @forelse($heroSlides as $s)
+                        <div class="swiper-slide" style="background-image:url('{{ Storage::url($s->gambar) }}')"></div>
+                    @empty
+                        {{-- Fallback kalau DB kosong --}}
+                        <div class="swiper-slide" style="background-image:url('{{ asset('images/branda.jpg') }}')"></div>
+                    @endforelse
                 </div>
+                <div class="swiper-pagination"></div>
+                <div class="swiper-button-prev"></div>
+                <div class="swiper-button-next"></div>
             </div>
-            {{-- Slide 2 --}}
-            <div class="swiper-slide">
-                <div class="relative w-full h-full bg-cover bg-center" style="background-image: url('{{ asset('images/slide2.jpg') }}')">
-                    <div class="absolute inset-0 bg-black/20"></div>
-                    <div class="relative z-10 h-full flex items-center justify-center text-white text-center px-4">
-                        <div class="max-w-3xl" style="text-shadow: 2px 2px 8px rgba(0,0,0,0.7);">
-                            <h2 class="text-3xl md:text-4xl font-bold mb-4">Koneksi Alumni</h2>
-                            <p class="text-lg">Bangun jaringan profesional dengan lebih dari 8.000 alumni IAIT yang sukses di berbagai bidang.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {{-- Slide 3 --}}
-            <div class="swiper-slide">
-                <div class="relative w-full h-full bg-cover bg-center" style="background-image: url('{{ asset('images/slide3.jpg') }}')">
-                    <div class="absolute inset-0 bg-black/20"></div>
-                    <div class="relative z-10 h-full flex items-center justify-center text-white text-center px-4">
-                        <div class="max-w-3xl" style="text-shadow: 2px 2px 8px rgba(0,0,0,0.7);">
-                            <h2 class="text-3xl md:text-4xl font-bold mb-4">Event & Agenda</h2>
-                            <p class="text-lg">Ikuti reuni, seminar dan pelatihan karir eksklusif untuk alumni IAIT.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {{-- Slide 4 --}}
-            <div class="swiper-slide">
-                <div class="relative w-full h-full bg-cover bg-center" style="background-image: url('{{ asset('images/slide4.jpg') }}')">
-                    <div class="absolute inset-0 bg-black/20"></div>
-                    <div class="relative z-10 h-full flex items-center justify-center text-white text-center px-4">
-                        <div class="max-w-3xl" style="text-shadow: 2px 2px 8px rgba(0,0,0,0.7);">
-                            <h2 class="text-3xl md:text-4xl font-bold mb-4">Lowongan Kerja</h2>
-                            <p class="text-lg">Temukan peluang karir terbaik dari perusahaan yang memprioritaskan alumni IAIT.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+
+            {{-- Button Kelola Slider — admin only --}}
+            @if(auth()->check() && trim(auth()->user()->role) === 'admin')
+                <a href="{{ route('admin.hero.index') }}"
+                    class="absolute bottom-6 right-6 z-10 bg-white bg-opacity-90 hover:bg-opacity-100 text-green-700 font-semibold text-xs px-4 py-2 rounded-full shadow-lg transition flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Kelola Slider
+                </a>
+            @endif
         </div>
-        {{-- Pagination & Navigasi --}}
-        <div class="swiper-pagination"></div>
-        <div class="swiper-button-prev"></div>
-        <div class="swiper-button-next"></div>
-    </div>
-</section>
 
-    {{-- 2. TENTANG ALUMNI (Ringkas) --}}
-    <section class="py-16 bg-white">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="text-center mb-8">
-                <h2 class="text-3xl font-bold text-gray-800">Tentang Alumni IAIT</h2>
-                <div class="w-20 h-1 bg-green-600 mx-auto mt-2"></div>
-            </div>
-            @php
-                $about = \App\Models\About::first();
-            @endphp
-            <div class="max-w-3xl mx-auto text-center">
-                <p class="text-lg text-gray-600 leading-relaxed">
-                    {{ $about->deskripsi_singkat ?? 'Institut Agama Islam Tasikmalaya (IAIT) telah melahirkan ribuan alumni yang berkontribusi di berbagai bidang. Website ini hadir sebagai wadah silaturahmi dan informasi bagi seluruh alumni.' }}
+        {{-- TENTANG --}}
+        <section class="py-12 bg-white">
+            <div class="max-w-5xl mx-auto px-4 text-center">
+                <h2 class="text-2xl font-bold text-gray-800">Tentang Alumni IAIT</h2>
+                <div class="w-14 h-1 bg-green-600 mx-auto mt-2 mb-5"></div>
+                <p class="text-gray-600 leading-relaxed max-w-2xl mx-auto text-sm">
+                    {{ $about->deskripsi_singkat ?? 'Institut Agama Islam Tasikmalaya (IAIT) telah melahirkan ribuan alumni yang berkontribusi di berbagai bidang.' }}
                 </p>
-                <div class="mt-8">
-                    <a href="{{ route('tentang') }}" class="inline-block bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition">
-                        Selengkapnya →
-                    </a>
-                </div>
+                <a href="{{ route('tentang') }}"
+                    class="inline-block mt-6 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold py-2.5 px-5 rounded-lg transition">
+                    Selengkapnya →
+                </a>
             </div>
-        </div>
-    </section>
+        </section>
 
-    {{-- 3. STATISTIK --}}
-    <section class="py-16 bg-gray-100">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="text-center mb-8">
-                <h2 class="text-3xl font-bold text-gray-800">Statistik Alumni</h2>
-                <div class="w-20 h-1 bg-green-600 mx-auto mt-2"></div>
-            </div>
-            @php
-                $totalAlumni = \App\Models\Alumni::where('status', 'approved')->count();
-                $bekerja = \App\Models\Alumni::where('status', 'approved')
-                            ->whereNotNull('pekerjaan')
-                            ->where('pekerjaan', '!=', '')
-                            ->count();
-                $belumBekerja = $totalAlumni - $bekerja;
-            @endphp
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="bg-white p-8 rounded-xl shadow text-center">
-                    <div class="text-4xl font-bold text-green-600">{{ number_format($totalAlumni) }}</div>
-                    <div class="text-gray-600 mt-2">Total Alumni</div>
-                </div>
-                <div class="bg-white p-8 rounded-xl shadow text-center">
-                    <div class="text-4xl font-bold text-green-600">{{ number_format($bekerja) }}</div>
-                    <div class="text-gray-600 mt-2">Sedang Bekerja</div>
-                </div>
-                <div class="bg-white p-8 rounded-xl shadow text-center">
-                    <div class="text-4xl font-bold text-green-600">{{ number_format($belumBekerja) }}</div>
-                    <div class="text-gray-600 mt-2">Belum Bekerja</div>
+        {{-- STATISTIK --}}
+        <section class="py-10 bg-gray-100">
+            <div class="max-w-5xl mx-auto px-4">
+                <h2 class="text-2xl font-bold text-gray-800 text-center">Statistik Alumni</h2>
+                <div class="w-14 h-1 bg-green-600 mx-auto mt-2 mb-7"></div>
+                <div class="grid grid-cols-3 gap-4">
+                    @foreach([['val' => $totalAlumni, 'label' => 'Total Alumni'], ['val' => $bekerja, 'label' => 'Sedang Bekerja'], ['val' => $totalAlumni - $bekerja, 'label' => 'Belum Bekerja']] as $st)
+                        <div class="bg-white rounded-xl shadow p-5 text-center">
+                            <div class="text-3xl font-bold text-green-600">{{ number_format($st['val']) }}</div>
+                            <div class="text-gray-500 text-sm mt-1">{{ $st['label'] }}</div>
+                        </div>
+                    @endforeach
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    {{-- 4. TESTIMONI SLIDER (RAPIH) --}}
-    <section class="py-16 bg-white">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="flex justify-between items-center mb-8">
-                <h2 class="text-3xl font-bold text-gray-800">Testimoni Alumni</h2>
-                <a href="{{ route('testimoni.index') }}" class="text-green-600 hover:text-green-800 font-medium">Selengkapnya →</a>
+        {{-- TESTIMONI --}}
+        <section class="py-10 bg-white">
+            <div class="max-w-5xl mx-auto px-4">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">Testimoni Alumni</div>
+                        <div class="section-bar"></div>
+                    </div>
+                    <div class="scroll-nav">
+                        <button class="scroll-btn" onclick="sc('testi-track',-1)"><svg class="w-3.5 h-3.5" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                    d="M15 19l-7-7 7-7" />
+                            </svg></button>
+                        <button class="scroll-btn" onclick="sc('testi-track',1)"><svg class="w-3.5 h-3.5" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+                            </svg></button>
+                    </div>
+                </div>
+                <div id="testi-track" class="cards-track">
+                    @forelse($testimonis as $t)
+                        <a href="{{ route('testimoni.index') }}#testimoni-{{ $t->id }}" class="testi-card">
+                            <svg class="w-5 h-5 text-green-200 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+                            </svg>
+                            <p class="card-desc clamp3 italic" style="word-break:break-word; overflow-wrap:break-word;">
+                                "{{ $t->isi_testimoni }}"
+                            </p>
+                            <div class="flex items-center gap-2 pt-2 border-t border-gray-100 mt-auto">
+                                <img src="{{ $t->foto ? asset('storage/' . $t->foto) : asset('images/default-avatar.png') }}"
+                                    class="testi-avatar" alt="{{ $t->nama }}">
+                                <div>
+                                    <div style="font-size:0.73rem;font-weight:700;color:#1f2937">{{ $t->nama }}</div>
+                                    <div class="card-meta">{{ $t->jurusan }} · {{ $t->tahun_lulus }}</div>
+                                </div>
+                            </div>
+                        </a>
+                    @empty
+                        <p class="text-gray-400 text-sm italic">Belum ada testimoni.</p>
+                    @endforelse
+                    @if($testimonis->count() >= 7)
+                        <a href="{{ route('testimoni.index') }}" class="card-more"><svg class="w-6 h-6" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                            </svg>Lihat Semua</a>
+                    @endif
+                </div>
             </div>
-            <div class="slider-section">
-                <div class="swiper testimoniSwiper">
-                    <div class="swiper-wrapper">
-                        @foreach(\App\Models\Testimoni::latest()->take(10)->get() as $testi)
-                        <div class="swiper-slide">
-                            <div class="uniform-card">
-                                <div class="card-content">
-                                    {{-- Icon kutip --}}
-                                    <svg class="w-8 h-8 text-green-200 mb-3" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+        </section>
+
+        {{-- AGENDA --}}
+        <section class="py-10 bg-gray-100">
+            <div class="max-w-5xl mx-auto px-4">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">Agenda Terbaru</div>
+                        <div class="section-bar"></div>
+                    </div>
+                    <div class="scroll-nav">
+                        <button class="scroll-btn" onclick="sc('agenda-track',-1)"><svg class="w-3.5 h-3.5" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                    d="M15 19l-7-7 7-7" />
+                            </svg></button>
+                        <button class="scroll-btn" onclick="sc('agenda-track',1)"><svg class="w-3.5 h-3.5" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+                            </svg></button>
+                    </div>
+                </div>
+                <div id="agenda-track" class="cards-track">
+                    @forelse($agendas as $a)
+                        <a href="{{ route('agenda.index') }}#agenda-{{ $a->id }}" class="card">
+                            @if($a->gambar)
+                                <img src="{{ asset('storage/' . $a->gambar) }}" class="card-img" alt="{{ $a->judul }}"
+                                    onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                                <div class="card-img-ph" style="display:none"><svg class="w-7 h-7" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg></div>
+                            @else
+                                <div class="card-img-ph"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg></div>
+                            @endif
+                            <div class="card-body">
+                                <div class="card-green">
+                                    {{ \Carbon\Carbon::parse($a->tanggal_mulai)->format('d M Y') }}@if($a->tanggal_selesai) –
+                                    {{ \Carbon\Carbon::parse($a->tanggal_selesai)->format('d M Y') }}@endif</div>
+                                <div class="card-title clamp2">{{ $a->judul }}</div>
+                                <div class="card-desc clamp3">{{ strip_tags($a->deskripsi) }}</div>
+                            </div>
+                        </a>
+                    @empty
+                        <p class="text-gray-400 text-sm italic">Belum ada agenda.</p>
+                    @endforelse
+                    @if($agendas->count() >= 7)
+                        <a href="{{ route('agenda.index') }}" class="card-more"><svg class="w-6 h-6" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                            </svg>Lihat Semua</a>
+                    @endif
+                </div>
+            </div>
+        </section>
+
+        {{-- BERITA --}}
+        <section class="py-10 bg-white">
+            <div class="max-w-5xl mx-auto px-4">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">Berita Terbaru</div>
+                        <div class="section-bar"></div>
+                    </div>
+                    <div class="scroll-nav">
+                        <button class="scroll-btn" onclick="sc('berita-track',-1)"><svg class="w-3.5 h-3.5" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                    d="M15 19l-7-7 7-7" />
+                            </svg></button>
+                        <button class="scroll-btn" onclick="sc('berita-track',1)"><svg class="w-3.5 h-3.5" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+                            </svg></button>
+                    </div>
+                </div>
+                <div id="berita-track" class="cards-track">
+                    @forelse($beritas as $b)
+                        <a href="{{ route('berita.show', $b->id) }}" class="card">
+                            @if($b->gambar)
+                                <img src="{{ asset('storage/' . $b->gambar) }}" class="card-img" alt="{{ $b->judul }}"
+                                    onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                                <div class="card-img-ph" style="display:none"><svg class="w-7 h-7" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                            d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                                    </svg></div>
+                            @else
+                                <div class="card-img-ph"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                            d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                                    </svg></div>
+                            @endif
+                            <div class="card-body">
+                                <div class="card-green">{{ \Carbon\Carbon::parse($b->tanggal)->format('d M Y') }}</div>
+                                <div class="card-title clamp2">{{ $b->judul }}</div>
+                                <div class="card-desc clamp3">{{ strip_tags($b->isi) }}</div>
+                            </div>
+                        </a>
+                    @empty
+                        <p class="text-gray-400 text-sm italic">Belum ada berita.</p>
+                    @endforelse
+                    @if($beritas->count() >= 7)
+                        <a href="{{ route('berita.index') }}" class="card-more"><svg class="w-6 h-6" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                            </svg>Lihat Semua</a>
+                    @endif
+                </div>
+            </div>
+        </section>
+
+        {{-- LOWONGAN --}}
+        <section class="py-10 bg-gray-100">
+            <div class="max-w-5xl mx-auto px-4">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">Lowongan Kerja</div>
+                        <div class="section-bar"></div>
+                    </div>
+                    <div class="scroll-nav">
+                        <button class="scroll-btn" onclick="sc('lowongan-track',-1)"><svg class="w-3.5 h-3.5" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                    d="M15 19l-7-7 7-7" />
+                            </svg></button>
+                        <button class="scroll-btn" onclick="sc('lowongan-track',1)"><svg class="w-3.5 h-3.5" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+                            </svg></button>
+                    </div>
+                </div>
+                <div id="lowongan-track" class="cards-track">
+                    @forelse($lowongans as $l)
+                        <a href="{{ route('lowongan.show', $l) }}" class="card lowongan-card">
+                            @if($l->gambar)
+                                <img src="{{ asset('storage/' . $l->gambar) }}" class="card-img" alt="{{ $l->judul }}">
+                            @else
+                                <div class="card-img-ph">
+                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                            d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6a4 4 0 11-8 0 4 4 0 018 0zM12 11a4 4 0 100-8 4 4 0 000 8z" />
                                     </svg>
-                                    <p class="text-gray-600 italic flex-grow line-clamp-3">"{{ $testi->isi_testimoni }}"</p>
-                                    <div class="flex items-center mt-5 pt-3 border-t border-gray-100">
-                                        <img src="{{ $testi->foto ? asset('storage/'.$testi->foto) : asset('images/default-avatar.png') }}" 
-                                             class="testi-avatar mr-3">
-                                        <div>
-                                            <h4 class="font-semibold text-gray-800">{{ $testi->nama }}</h4>
-                                            <p class="text-sm text-gray-500">{{ $testi->jurusan }} {{ $testi->tahun_lulus }}</p>
-                                        </div>
-                                    </div>
+                                </div>
+                            @endif
+                            <div class="card-body">
+                                <div class="card-title clamp2">{{ $l->judul }}</div>
+                                <div class="card-green">{{ $l->perusahaan }}</div>
+                                <div class="card-meta flex items-center gap-1">
+                                    <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    {{ $l->lokasi }}
+                                </div>
+                                <div class="card-desc clamp3">{{ strip_tags($l->deskripsi) }}</div>
+                                <div class="flex items-center justify-between mt-auto pt-2">
+                                    <span class="badge">{{ $l->tipe }}</span>
+                                    <span class="card-meta">{{ $l->created_at->diffForHumans() }}</span>
                                 </div>
                             </div>
-                        </div>
-                        @endforeach
-                    </div>
-                    <div class="swiper-pagination"></div>
+                        </a>
+                    @empty
+                        <p class="text-gray-400 text-sm italic">Belum ada lowongan.</p>
+                    @endforelse
+                    @if($lowongans->count() >= 7)
+                        <a href="{{ route('lowongan.index') }}" class="card-more"><svg class="w-6 h-6" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                            </svg>Lihat Semua</a>
+                    @endif
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    {{-- 5. AGENDA SLIDER (RAPIH) --}}
-    <section class="py-16 bg-gray-100">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="flex justify-between items-center mb-8">
-                <h2 class="text-3xl font-bold text-gray-800">Agenda Terbaru</h2>
-                <a href="{{ route('agenda.index') }}" class="text-green-600 hover:text-green-800 font-medium">Selengkapnya →</a>
-            </div>
-            <div class="slider-section">
-                <div class="swiper agendaSwiper">
-                    <div class="swiper-wrapper">
-                        @foreach(\App\Models\Agenda::latest('tanggal_mulai')->take(10)->get() as $agenda)
-                        <div class="swiper-slide">
-                            <div class="uniform-card">
-                                @if($agenda->gambar)
-                                    <img src="{{ asset('storage/'.$agenda->gambar) }}" class="card-img">
-                                @else
-                                    <div class="card-img bg-gray-200 flex items-center justify-center text-gray-400 text-sm">No Image</div>
-                                @endif
-                                <div class="card-content">
-                                    <h3 class="font-bold text-lg mb-1 line-clamp-2">{{ $agenda->judul }}</h3>
-                                    <p class="text-sm text-green-600 mb-2 flex items-center">
-                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                        </svg>
-                                        {{ \Carbon\Carbon::parse($agenda->tanggal_mulai)->format('d M Y') }}
-                                        @if($agenda->tanggal_selesai) - {{ \Carbon\Carbon::parse($agenda->tanggal_selesai)->format('d M Y') }} @endif
-                                    </p>
-                                    <p class="text-gray-600 text-sm flex-grow">{{ Str::limit($agenda->deskripsi, 70) }}</p>
-                                </div>
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-                    <div class="swiper-pagination"></div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    {{-- 6. BERITA SLIDER (RAPIH) --}}
-    <section class="py-16 bg-white">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="flex justify-between items-center mb-8">
-                <h2 class="text-3xl font-bold text-gray-800">Berita Terbaru</h2>
-                <a href="{{ route('berita.index') }}" class="text-green-600 hover:text-green-800 font-medium">Selengkapnya →</a>
-            </div>
-            <div class="slider-section">
-                <div class="swiper beritaSwiper">
-                    <div class="swiper-wrapper">
-                        @foreach(\App\Models\Berita::latest()->take(10)->get() as $berita)
-                        <div class="swiper-slide">
-                            <div class="uniform-card">
-                                @if($berita->gambar)
-                                    <img src="{{ asset('storage/'.$berita->gambar) }}" class="card-img">
-                                @else
-                                    <div class="card-img bg-gray-200 flex items-center justify-center text-gray-400 text-sm">No Image</div>
-                                @endif
-                                <div class="card-content">
-                                    <p class="text-xs font-medium text-green-600 mb-1">{{ \Carbon\Carbon::parse($berita->tanggal)->format('d M Y') }}</p>
-                                    <h3 class="font-bold text-lg mb-2 line-clamp-2">{{ $berita->judul }}</h3>
-                                    <p class="text-gray-600 text-sm flex-grow">{{ Str::limit($berita->isi, 80) }}</p>
-                                </div>
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-                    <div class="swiper-pagination"></div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    {{-- 7. LOWONGAN SLIDER (RAPIH) --}}
-    <section class="py-16 bg-gray-100">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="flex justify-between items-center mb-8">
-                <h2 class="text-3xl font-bold text-gray-800">Lowongan Kerja</h2>
-                <a href="{{ route('lowongan.index') }}" class="text-green-600 hover:text-green-800 font-medium">Selengkapnya →</a>
-            </div>
-            <div class="slider-section">
-                <div class="swiper lowonganSwiper">
-                    <div class="swiper-wrapper">
-                        @foreach(\App\Models\Lowongan::latest()->take(10)->get() as $lowongan)
-                        <div class="swiper-slide">
-                            <div class="uniform-card lowongan-accent">
-                                <div class="card-content">
-                                    <h3 class="font-bold text-xl mb-1 text-gray-800">{{ $lowongan->judul }}</h3>
-                                    <p class="text-green-700 font-medium text-sm mb-2">{{ $lowongan->perusahaan }}</p>
-                                    <div class="flex items-center text-gray-500 text-sm mb-3">
-                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                        </svg>
-                                        {{ $lowongan->lokasi }}
-                                    </div>
-                                    <p class="text-gray-600 text-sm flex-grow line-clamp-3">{{ $lowongan->deskripsi }}</p>
-                                    <div class="mt-4 flex items-center justify-between">
-                                        <span class="bg-green-100 text-green-800 text-xs font-medium px-3 py-1 rounded-full">{{ $lowongan->tipe }}</span>
-                                        <span class="text-xs text-gray-400">{{ $lowongan->created_at->diffForHumans() }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-                    <div class="swiper-pagination"></div>
-                </div>
-            </div>
-        </div>
-    </section>
-</div>
+    </div>
 @endsection
 
 @push('scripts')
-    {{-- Swiper JS --}}
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Hero Carousel
-            new Swiper('.heroSwiper', {
-                loop: true,
-                autoplay: { delay: 4000, disableOnInteraction: false },
-                pagination: { el: '.heroSwiper .swiper-pagination', clickable: true },
-                navigation: { nextEl: '.heroSwiper .swiper-button-next', prevEl: '.heroSwiper .swiper-button-prev' },
-            });
-
-            // Fungsi inisialisasi slider seragam
-            const initSlider = (selector) => {
-                return new Swiper(selector, {
-                    slidesPerView: 'auto',
-                    spaceBetween: 20,
-                    pagination: { el: `${selector} .swiper-pagination`, clickable: true },
-                    freeMode: true,
-                    grabCursor: true,
-                });
-            };
-
-            initSlider('.testimoniSwiper');
-            initSlider('.agendaSwiper');
-            initSlider('.beritaSwiper');
-            initSlider('.lowonganSwiper');
+        new Swiper('.heroSwiper', {
+            loop: true,
+            autoplay: { delay: 4000, disableOnInteraction: false },
+            pagination: { el: '.heroSwiper .swiper-pagination', clickable: true },
+            navigation: { nextEl: '.heroSwiper .swiper-button-next', prevEl: '.heroSwiper .swiper-button-prev' },
         });
+
+        function sc(id, dir) {
+            document.getElementById(id).scrollBy({ left: dir * 220, behavior: 'smooth' });
+        }
     </script>
 @endpush

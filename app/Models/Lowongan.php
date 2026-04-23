@@ -57,4 +57,5 @@ class Lowongan extends Model
     {
         return $query->whereJsonContains('target_prodi', $prodi);
     }
+    
 }

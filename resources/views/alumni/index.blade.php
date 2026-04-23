@@ -4,7 +4,7 @@
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800">Daftar Alumni</h1>
-@auth
+        @auth
             <a href="{{ route('alumni.data') }}" class="bg-gray-500 hover:bg-gray-400 text-white px-4 py-2 rounded-lg text-sm">
                 ← Kembali
             </a>
@@ -30,39 +30,50 @@
     @endauth
 
     {{-- Filter --}}
-<form method="GET" action="{{ route($routePrefix . '.index') }}" class="mb-6 flex flex-wrap gap-3 bg-white p-4 rounded-lg shadow items-end">
-    <div>
-        <label class="block text-xs font-semibold mb-1">Angkatan</label>
-        <select name="angkatan" class="border rounded px-3 py-2 text-sm w-32">
-            <option value="">Semua</option>
-            @foreach($angkatanList as $tahun)
-                <option value="{{ $tahun }}" {{ request('angkatan') == $tahun ? 'selected' : '' }}>{{ $tahun }}</option>
-            @endforeach
-        </select>
-    </div>
+    <form method="GET" action="{{ route($routePrefix . '.index') }}" class="mb-6 flex flex-wrap gap-3 bg-white p-4 rounded-lg shadow items-end">
+        {{-- Filter Angkatan --}}
+        <div>
+            <label class="block text-xs font-semibold mb-1">Angkatan</label>
+            <select name="angkatan" class="border rounded px-3 py-2 text-sm w-32">
+                <option value="">Semua</option>
+                @foreach($angkatanList as $tahun)
+                    <option value="{{ $tahun }}" {{ request('angkatan') == $tahun ? 'selected' : '' }}>{{ $tahun }}</option>
+                @endforeach
+            </select>
+        </div>
 
-    @auth
-    @if(auth()->user()->role == 'admin')
-    <div>
-        <label class="block text-xs font-semibold mb-1">Mode</label>
-        <button type="button" id="modeToggle" class="relative inline-flex items-center h-8 rounded-full w-14 transition-colors focus:outline-none 
-            {{ request('mode') == 'pending' ? 'bg-yellow-500' : 'bg-gray-300' }}" onclick="toggleMode()">
-            <span class="sr-only">Toggle mode</span>
-            <span class="inline-block w-6 h-6 transform transition-transform bg-white rounded-full shadow 
-                {{ request('mode') == 'pending' ? 'translate-x-7' : 'translate-x-1' }}"></span>
-            <span class="absolute left-1 text-xs font-medium {{ request('mode') == 'pending' ? 'text-white opacity-100' : 'text-gray-600 opacity-0' }}">Request</span>
-            <span class="absolute right-1 text-xs font-medium {{ request('mode') == 'pending' ? 'text-gray-600 opacity-0' : 'text-white opacity-100' }}">Normal</span>
-        </button>
-        <input type="hidden" name="mode" id="modeInput" value="{{ request('mode') }}">
-    </div>
-    @endif
-    @endauth
+        @auth
+        @if(auth()->user()->role == 'admin')
+        <div>
+            <label class="block text-xs font-semibold mb-1">Mode</label>
+            <button type="button" id="modeToggle" class="relative inline-flex items-center h-8 rounded-full w-14 transition-colors focus:outline-none 
+                {{ request('mode') == 'pending' ? 'bg-yellow-500' : 'bg-gray-300' }}" onclick="toggleMode()">
+                <span class="sr-only">Toggle mode</span>
+                <span class="inline-block w-6 h-6 transform transition-transform bg-white rounded-full shadow 
+                    {{ request('mode') == 'pending' ? 'translate-x-7' : 'translate-x-1' }}"></span>
+                <span class="absolute left-1 text-xs font-medium {{ request('mode') == 'pending' ? 'text-white opacity-100' : 'text-gray-600 opacity-0' }}">Request</span>
+                <span class="absolute right-1 text-xs font-medium {{ request('mode') == 'pending' ? 'text-gray-600 opacity-0' : 'text-white opacity-100' }}">Normal</span>
+            </button>
+            <input type="hidden" name="mode" id="modeInput" value="{{ request('mode') }}">
+        </div>
+        @endif
+        @endauth
 
-    <div class="flex items-end gap-2">
-        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">Filter</button>
-        <a href="{{ route($routePrefix . '.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg text-sm">Reset</a>
-    </div>
-</form>
+        {{-- Tombol Filter & Reset --}}
+        <div class="flex items-end gap-2">
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">Filter</button>
+            <a href="{{ route($routePrefix . '.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg text-sm">Reset</a>
+        </div>
+
+        {{-- Pencarian (posisi paling kanan) --}}
+        <div class="ml-auto flex items-end gap-2">
+            <div>
+                <label class="block text-xs font-semibold mb-1">Cari</label>
+                <input type="text" name="search" placeholder="Nama atau NIM..." value="{{ request('search') }}" class="border rounded px-3 py-2 text-sm w-64">
+            </div>
+            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm">Cari</button>
+        </div>
+    </form>
 
     {{-- Tabel Alumni --}}
     <div class="overflow-x-auto bg-white rounded-lg shadow">

@@ -21,8 +21,11 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
             'password' => bcrypt('12345678'),
+            'role' => 'admin',
         ]);
 
+        $this->call(AlumniSeeder::class);
         $this->call(AgendaSeeder::class);
+        $this->call(HeroslideSeeder::class);
     }
 }

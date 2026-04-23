@@ -1,8 +1,13 @@
 @extends('layouts.app')
 
 @section('title', 'Kelola Pesan Kontak')
-
 @section('content')
+<!-- ================= HERO SECTION ================= -->
+<section
+    class="relative h-[400px] flex items-center justify-center text-center text-white bg-cover bg-center"
+    style="background-image: url('{{ asset('images/Branda.jpg') }}');"
+>
+</section>
 <div class="px-4 sm:px-6 lg:px-8 py-8">
     <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">

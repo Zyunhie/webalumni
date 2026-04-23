@@ -4,12 +4,6 @@
 <!-- Hero Section -->
 <section class="relative h-[400px] flex items-center justify-center text-center text-white bg-cover bg-center"
     style="background-image: url('{{ asset('images/Branda.jpg') }}');">
-    <div class="absolute inset-0 bg-black bg-opacity-40 flex flex-col justify-center items-center text-white">
-        <h1 class="text-4xl font-bold">Kontak Kami</h1>
-        <p class="mt-2 text-sm">
-            <a href="{{ route('dashboard') }}" class="hover:underline">Beranda</a> > Kontak
-        </p>
-    </div>
 </section>
 
 <!-- Kontak Form dan Info -->

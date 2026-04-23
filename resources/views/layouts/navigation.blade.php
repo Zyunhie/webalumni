@@ -37,16 +37,23 @@
                              class="absolute mt-2 w-48 bg-white rounded shadow-lg z-50">
                             <a href="{{ route('alumni.data') }}" class="block px-4 py-2 text-sm">Data Alumni</a>
                             <a href="{{ route('testimoni.index') }}" class="block px-4 py-2 text-sm">Testimoni</a>
-</xai:function_call)
-
-<xai:function_call name="edit_file">
-<parameter name="path">resources/views/components/header.blade.php
                             <a href="{{ route('alumni.agenda') }}" class="block px-4 py-2 text-sm">Agenda</a>
                         </div>
                     </div>
 
-                    <a href="{{ route('dashboard') }}" class="text-white text-sm">Berita</a>
+                    <a href="{{ route('berita.index') }}" class="text-white text-sm">Berita</a>
+                    <a href="{{ route('lowongan.index') }}" class="text-white text-sm">Lowongan</a>
                     <a href="{{ route('kontak') }}" class="text-white text-sm">Kontak</a>
+
+                    @auth
+                        @if(auth()->check() && trim(auth()->user()->role) === 'admin')
+                            <a href="{{ route('admin.kontak.index') }}"
+                               class="text-white border-b-2 px-1 pt-1 text-sm
+                               {{ request()->routeIs('admin.kontak.*') ? 'border-white' : 'border-transparent' }}">
+                                Kelola Pesan
+                            </a>
+                        @endif
+                    @endauth
                 </div>
             </div>
 
@@ -54,22 +61,24 @@
             <div class="hidden sm:flex sm:items-center space-x-4">
 
                 @auth
-                    <span class="text-white text-sm">
+                    {{-- Nama user jadi link ke profile --}}
+                    <a href="{{ route('profile') }}"
+                       class="text-white text-sm font-medium hover:text-green-200 transition border-b border-transparent hover:border-green-200">
                         {{ auth()->user()->name ?? auth()->user()->nim }}
-                    </span>
+                    </a>
 
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit"
-                            class="px-4 py-2 bg-red-500 text-white rounded text-xs hover:bg-red-600">
-                            Logout
+                            class="px-4 py-2 bg-red-500 text-white rounded text-xs hover:bg-red-600 transition">
+                            Keluar
                         </button>
                     </form>
                 @endauth
 
                 @guest
                     <a href="{{ route('login') }}"
-                       class="px-4 py-2 bg-white text-green-600 rounded text-xs font-semibold">
+                       class="px-4 py-2 bg-white text-green-600 rounded text-xs font-semibold hover:bg-green-50 transition">
                         Login
                     </a>
                 @endguest
@@ -93,17 +102,23 @@
             <a href="{{ route('dashboard') }}" class="block text-white">Beranda</a>
             <a href="{{ route('tentang') }}" class="block text-white">Tentang</a>
             <a href="{{ route('alumni.data') }}" class="block text-white">Data Alumni</a>
+            <a href="{{ route('testimoni.index') }}" class="block text-white">Testimoni</a>
+            <a href="{{ route('berita.index') }}" class="block text-white">Berita</a>
+            <a href="{{ route('lowongan.index') }}" class="block text-white">Lowongan</a>
+            <a href="{{ route('kontak') }}" class="block text-white">Kontak</a>
 
             @auth
                 <div class="border-t border-green-500 pt-2">
-                    <div class="text-white text-sm mb-2">
+                    {{-- Mobile: nama user juga jadi link --}}
+                    <a href="{{ route('profile') }}"
+                       class="block text-white text-sm font-medium mb-2 hover:text-green-200 transition">
                         {{ auth()->user()->name ?? auth()->user()->nim }}
-                    </div>
+                    </a>
 
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button class="w-full text-left text-red-300">
-                            Logout
+                        <button class="w-full text-left text-red-300 text-sm">
+                            Keluar
                         </button>
                     </form>
                 </div>

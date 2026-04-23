@@ -12,7 +12,7 @@
         </div>
     </section>
 
-    <!-- Berita Terbaru (scroll horizontal) -->
+    <!-- Berita Terbaru -->
     <section class="max-w-6xl mx-auto px-6 py-12">
         <h2 class="text-2xl font-bold text-gray-800 mb-6">Berita Terbaru</h2>
 
@@ -20,7 +20,10 @@
             @foreach ($berita as $item)
                 <a href="{{ route('berita.show', $item->id) }}"
                     class="bg-white min-w-[300px] rounded-xl shadow hover:shadow-lg overflow-hidden transition flex-shrink-0">
-                    <img src="{{ asset($item->gambar) }}" alt="{{ $item->judul }}" class="w-full h-48 object-cover">
+                    <img src="{{ $item->gambar ? asset('storage/' . $item->gambar) : asset('images/placeholder.jpg') }}"
+                         alt="{{ $item->judul }}"
+                         class="w-full h-48 object-cover"
+                         onerror="this.onerror=null; this.src='{{ asset('images/placeholder.jpg') }}'">
                     <div class="p-4">
                         <p class="flex items-center text-sm text-gray-500 mb-2">
                             <i class="bi bi-calendar-event me-2 text-green-600"></i>

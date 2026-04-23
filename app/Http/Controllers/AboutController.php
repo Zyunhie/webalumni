@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\HeroSlide;
 use Illuminate\Http\Request;
 use App\Models\About;
 use Illuminate\Support\Facades\Storage;
@@ -24,6 +25,7 @@ class AboutController extends Controller
     public function index()
     {
         $about = About::first();
+        $heroTentang = HeroSlide::aktif()->forPage('tentang')->first();
 
         // safety net: kalau tabel kosong
         if (!$about) {
@@ -34,7 +36,7 @@ class AboutController extends Controller
             ]);
         }
 
-        return view('tentang', compact('about'));
+         return view('tentang', compact('about', 'heroTentang'));
     }
 
     /*

@@ -3,6 +3,12 @@
 @section('title', 'Kelola Lowongan Kerja')
 
 @section('content')
+<section
+    class="relative h-[400px] flex items-center justify-center text-center text-white bg-cover bg-center"
+    style="background-image: url('{{ asset('images/Branda.jpg') }}');"
+>
+</section>
+
 <div class="px-4 sm:px-6 lg:px-8 py-8">
     <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
@@ -10,32 +16,36 @@
             <p class="mt-2 text-sm text-gray-600">Kelola semua lowongan yang masuk.</p>
         </div>
         <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-            <a href="{{ route('admin.lowongan.create') }}" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700">
+            <a href="{{ route('admin.lowongan.create') }}"
+               class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700">
                 Tambah Lowongan
             </a>
         </div>
     </div>
 
+    {{-- Flash Message --}}
+    @if(session('success'))
+        <div class="mt-4 rounded-md bg-green-50 p-4 text-sm text-green-800 border border-green-200">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="mt-4 rounded-md bg-red-50 p-4 text-sm text-red-800 border border-red-200">
+            {{ session('error') }}
+        </div>
+    @endif
+
     {{-- Filter Status --}}
     <div class="mt-6">
         <div class="border-b border-gray-200">
             <nav class="-mb-px flex space-x-8">
-                <a href="{{ route('admin.lowongan.index', ['status' => 'semua']) }}" 
-                   class="{{ $status == 'semua' ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm">
-                    Semua
-                </a>
-                <a href="{{ route('admin.lowongan.index', ['status' => 'pending']) }}" 
-                   class="{{ $status == 'pending' ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm">
-                    Pending
-                </a>
-                <a href="{{ route('admin.lowongan.index', ['status' => 'approved']) }}" 
-                   class="{{ $status == 'approved' ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm">
-                    Disetujui
-                </a>
-                <a href="{{ route('admin.lowongan.index', ['status' => 'rejected']) }}" 
-                   class="{{ $status == 'rejected' ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm">
-                    Ditolak
-                </a>
+                @foreach(['semua' => 'Semua', 'pending' => 'Pending', 'approved' => 'Disetujui', 'rejected' => 'Ditolak'] as $key => $label)
+                    <a href="{{ route('admin.lowongan.index', ['status' => $key]) }}"
+                       class="{{ $status == $key ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm">
+                        {{ $label }}
+                    </a>
+                @endforeach
             </nav>
         </div>
     </div>
@@ -48,7 +58,8 @@
                     <table class="min-w-full divide-y divide-gray-300">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Judul</th>
+                                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Gambar</th>
+                                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900">Judul</th>
                                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Perusahaan</th>
                                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Target Prodi</th>
                                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Status</th>
@@ -61,10 +72,23 @@
                         <tbody class="divide-y divide-gray-200 bg-white">
                             @forelse($lowongans as $lowongan)
                                 <tr>
-                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
+                                        @if($lowongan->gambar)
+                                            <img src="{{ asset('storage/' . $lowongan->gambar) }}" 
+                                                 alt="Gambar {{ $lowongan->judul }}" 
+                                                 class="h-10 w-10 object-cover rounded-full">
+                                        @else
+                                            <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                                <span class="text-gray-400 text-xs">No img</span>
+                                            </div>
+                                        @endif
+                                    </td>
+                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900">
                                         {{ $lowongan->judul }}
                                     </td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ $lowongan->perusahaan }}</td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                        {{ $lowongan->perusahaan }}
+                                    </td>
                                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                                         {{ implode(', ', $lowongan->target_prodi ?? []) }}
                                     </td>
@@ -81,13 +105,28 @@
                                         {{ $lowongan->postedBy->name ?? '-' }}
                                     </td>
                                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                                        <a href="{{ route('admin.lowongan.show', $lowongan) }}" class="text-green-600 hover:text-green-900 mr-3">Detail</a>
-                                        <a href="{{ route('admin.lowongan.edit', $lowongan) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                        <a href="{{ route('admin.lowongan.show', $lowongan) }}"
+                                           class="text-green-600 hover:text-green-900 mr-3">Detail</a>
+
+                                        <a href="{{ route('admin.lowongan.edit', $lowongan) }}"
+                                           class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
+
+                                        <form action="{{ route('admin.lowongan.destroy', $lowongan) }}"
+                                              method="POST"
+                                              class="inline"
+                                              onsubmit="return confirm('Yakin ingin menghapus lowongan \"{{ addslashes($lowongan->judul) }}\"?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit"
+                                                    class="text-red-600 hover:text-red-900">
+                                                Hapus
+                                            </button>
+                                        </form>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="py-4 text-center text-gray-500">Tidak ada lowongan.</td>
+                                    <td colspan="7" class="py-4 text-center text-gray-500">Tidak ada lowongan.</td>
                                 </tr>
                             @endforelse
                         </tbody>

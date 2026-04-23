@@ -9,7 +9,7 @@ class RoleMiddleware
 {
     public function handle($request, Closure $next, $role)
     {
-        if (!Auth::check() || Auth::user()->role !== $role) {
+        if (!Auth::check() || trim(Auth::user()->role) !== trim($role)) {
             abort(403, 'Akses ditolak.');
         }
         return $next($request);

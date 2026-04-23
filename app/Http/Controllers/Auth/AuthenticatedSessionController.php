@@ -28,8 +28,21 @@ class AuthenticatedSessionController extends Controller
             return redirect()->route('admin.dashboard');
         }
 
-        // ALUMNI
-        return redirect()->route('lowongan.index');
+        // CEK STATUS ALUMNI
+        if ($user->status === 'pending') {
+            Auth::logout();
+            return redirect()->route('login')
+                ->withErrors(['login' => 'Akun kamu masih menunggu verifikasi admin.']);
+        }
+
+        if ($user->status === 'rejected') {
+            Auth::logout();
+            return redirect()->route('login')
+                ->withErrors(['login' => 'Akun kamu ditolak. Hubungi admin untuk informasi lebih lanjut.']);
+        }
+
+        // ALUMNI APPROVED
+        return redirect()->route('dashboard');
     }
 
     public function destroy(Request $request): RedirectResponse

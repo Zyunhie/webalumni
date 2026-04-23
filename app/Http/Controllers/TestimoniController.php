@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\HeroSlide;
 use App\Models\Testimonials;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -29,7 +30,8 @@ class TestimoniController extends Controller
         }
 
         $testimonials = $query->latest()->paginate(12);
-        return view('testimoni.index', compact('testimonials'));
+        $HeroTestimoni = HeroSlide::aktif()->forPage('testimoni')->first();
+        return view('testimoni.index', compact('testimonials','HeroTestimoni'));
     }
 
     public function create()

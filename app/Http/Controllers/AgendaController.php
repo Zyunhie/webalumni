@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Agenda;
+use App\Models\HeroSlide;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -19,8 +20,9 @@ class AgendaController extends Controller
      */
     public function index()
     {
-        $agendas = Agenda::orderBy('tanggal_mulai', 'asc')->get();
-        return view('alumni.agenda', compact('agendas'));
+        $agendas = Agenda::orderBy('tanggal_mulai', 'desc')->get();
+        $heroAgenda = HeroSlide::aktif()->forPage('agenda')->first();
+        return view('alumni.agenda', compact('agendas', 'heroAgenda'));
     }
 
     /**
@@ -34,12 +36,10 @@ class AgendaController extends Controller
 
     /**
      * Mengembalikan data agenda dalam format JSON (untuk keperluan edit modal).
-     * Hanya admin yang bisa mengakses.
+     * Hanya admin yang bisa mengakses (dijaga oleh middleware role:admin di route).
      */
     public function edit($id)
     {
-        $this->authorizeAdmin();
-
         $agenda = Agenda::findOrFail($id);
         return response()->json($agenda);
     }
@@ -49,8 +49,6 @@ class AgendaController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorizeAdmin();
-
         $request->validate([
             'judul'          => 'required|string|max:150',
             'deskripsi'      => 'required|string',
@@ -73,8 +71,6 @@ class AgendaController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $this->authorizeAdmin();
-
         $agenda = Agenda::findOrFail($id);
 
         $request->validate([
@@ -102,8 +98,6 @@ class AgendaController extends Controller
      */
     public function destroy($id)
     {
-        $this->authorizeAdmin();
-
         $agenda = Agenda::findOrFail($id);
         if ($agenda->gambar) {
             Storage::disk('public')->delete($agenda->gambar);
@@ -118,8 +112,6 @@ class AgendaController extends Controller
      */
     public function destroyAll()
     {
-        $this->authorizeAdmin();
-
         // Hapus semua file gambar terkait
         $agendas = Agenda::all();
         foreach ($agendas as $agenda) {
@@ -130,16 +122,5 @@ class AgendaController extends Controller
 
         Agenda::truncate();
         return redirect()->route('alumni.agenda')->with('success', 'Semua agenda berhasil dihapus!');
-    }
-
-    /**
-     * Helper untuk memastikan user yang login adalah admin.
-     * Jika bukan, lempar 403 Forbidden.
-     */
-    protected function authorizeAdmin()
-    {
-        if (!auth()->check() || !auth()->user()->is_admin) {
-            abort(403, 'Akses ditolak. Hanya admin yang dapat melakukan tindakan ini.');
-        }
     }
 }

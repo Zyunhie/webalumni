@@ -1,6 +1,14 @@
 @extends('layouts.app')
 
 @section('content')
+
+<!-- ================= HERO SECTION ================= -->
+<section
+    class="relative h-[400px] flex items-center justify-center text-center text-white bg-cover bg-center"
+    style="background-image: url('{{ asset('images/Branda.jpg') }}');"
+>
+</section>
+
 <div class="max-w-6xl mx-auto px-6 py-8">
     <div class="flex justify-between items-center mb-8">
         <h1 class="text-3xl font-bold text-gray-900">Kelola Berita</h1>

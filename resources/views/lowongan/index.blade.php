@@ -4,24 +4,35 @@
 <!-- Hero Section -->
 <section class="relative h-[400px] flex items-center justify-center text-center text-white bg-cover bg-center"
         style="background-image: url('{{ asset('images/Branda.jpg') }}');">
-    <div class="absolute inset-0 bg-black bg-opacity-40 flex flex-col justify-center items-center text-white">
-        <h1 class="text-4xl font-bold">Lowongan Pekerjaan</h1>
-        <p class="mt-2 text-sm">
-            <a href="{{ route('dashboard') }}" class="hover:underline">Beranda</a> > Lowongan Pekerjaan
-        </p>
-    </div>
 </section>
 
 <div class="py-12 bg-gray-100 min-h-screen">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Judul -->
-        <div class="mb-8 text-center">
-            <h1 class="text-3xl font-bold text-green-700">Daftar lowongan terbaru untuk alumni IAIT</h1>
+
+        <!-- Judul + Tombol Ajukan (untuk alumni) -->
+        <div class="mb-8 flex items-center justify-between">
+            <div class="text-center flex-1">
+                <h1 class="text-3xl font-bold text-green-700">Daftar lowongan terbaru untuk alumni IAIT</h1>
+            </div>
+            @auth
+                @if(auth()->user()->role === 'alumni')
+                    <a href="{{ route('alumni.lowongan.create') }}"
+                       class="ml-4 inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-full hover:bg-green-700 transition whitespace-nowrap">
+                        + Ajukan Lowongan
+                    </a>
+                @endif
+            @endauth
         </div>
+
+        @if(session('success'))
+            <div class="mb-6 rounded-md bg-green-50 p-4 text-sm text-green-800 border border-green-200">
+                {{ session('success') }}
+            </div>
+        @endif
 
         @php
             $showAll = request()->query('all') == 1;
-            $items = $lowongans ?? collect();
+            $items   = $lowongans ?? collect();
         @endphp
 
         <!-- Grid lowongan -->
@@ -43,7 +54,8 @@
                         <p class="text-sm text-gray-500 mb-4">{{ $item->perusahaan ?? 'Perusahaan tidak disebutkan' }}</p>
                         <div class="mt-auto flex items-center justify-between">
                             <p class="text-xs text-gray-400">{{ $item->created_at->format('d M Y') }}</p>
-                            <a href="{{ route('lowongan.show', $item->id) }}" class="text-sm bg-green-600 text-white px-3 py-1 rounded-full hover:bg-green-700 transition">Lihat</a>
+                            <a href="{{ route('lowongan.show', $item->id) }}"
+                               class="text-sm bg-green-600 text-white px-3 py-1 rounded-full hover:bg-green-700 transition">Lihat</a>
                         </div>
                     </div>
                 </div>
@@ -55,15 +67,29 @@
         <!-- Tombol lihat semua / kembali -->
         <div class="mt-10 text-center">
             @if(!$showAll && $items->count() > 9)
-                <a href="{{ route('lowongan.index', ['all' => 1]) }}" class="inline-block bg-yellow-500 text-white px-6 py-2 rounded-full hover:bg-yellow-400 transition">
+                <a href="{{ route('lowongan.index', ['all' => 1]) }}"
+                   class="inline-block bg-yellow-500 text-white px-6 py-2 rounded-full hover:bg-yellow-400 transition">
                     Lihat Semua Lowongan
                 </a>
             @elseif($showAll)
-                <a href="{{ route('lowongan.index') }}" class="inline-block bg-gray-500 text-white px-6 py-2 rounded-full hover:bg-gray-400 transition">
+                <a href="{{ route('lowongan.index') }}"
+                   class="inline-block bg-gray-500 text-white px-6 py-2 rounded-full hover:bg-gray-400 transition">
                     Kembali
                 </a>
             @endif
         </div>
+
+        <!-- Link ke lowongan saya (untuk alumni) -->
+        @auth
+            @if(auth()->user()->role === 'alumni')
+                <div class="mt-6 text-center">
+                    <a href="{{ route('alumni.lowongan.my') }}" class="text-sm text-green-600 hover:underline">
+                        Lihat lowongan yang saya ajukan →
+                    </a>
+                </div>
+            @endif
+        @endauth
+
     </div>
 </div>
 @endsection

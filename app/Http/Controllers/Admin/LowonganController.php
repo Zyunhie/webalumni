@@ -143,4 +143,11 @@ class LowonganController extends Controller
         
         return redirect()->back()->with('success', 'Notifikasi sedang diproses via queue.');
     }
+    public function destroy(Lowongan $lowongan)
+    {
+        $lowongan->delete();
+
+        return redirect()->route('admin.lowongan.index')
+            ->with('success', 'Lowongan berhasil dihapus.');
+    }
 }
