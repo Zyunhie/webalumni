@@ -11,7 +11,7 @@
 
 <div class="max-w-6xl mx-auto px-6 py-8">
     <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Kelola Berita</h1>
+        <h1 class="text-3xl font-bold text-gray-900">Kelola Beritas</h1>
         <a href="{{ route('admin.berita.create') }}" 
            class="bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all">
             <i class="bi bi-plus-lg me-2"></i>Tambah Berita
