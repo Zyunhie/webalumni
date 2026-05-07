@@ -112,13 +112,12 @@
     }
     .btn-danger:hover { background: #fef2f2; border-color: #ef4444; }
 
-    /* Avatar */
+    /* Avatar - DIPERBAIKI agar bulat */
     .avatar-ring {
         width: 80px;
         height: 80px;
         border-radius: 9999px;
         border: 3px solid rgba(255,255,255,0.3);
-        object-fit: cover;
         background: #166534;
         display: flex;
         align-items: center;
@@ -126,6 +125,33 @@
         color: #fff;
         font-size: 2rem;
         font-weight: 700;
+        flex-shrink: 0;
+        overflow: hidden;  /* Kunci agar gambar terpotong bulat */
+    }
+    .avatar-ring img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .photo-upload-row {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+        background: #f9fafb;
+        margin-bottom: 1.25rem;
+    }
+    .photo-preview {
+        width: 64px;
+        height: 64px;
+        border-radius: 9999px;
+        object-fit: cover;
+        background: #ecfdf5;
+        border: 2px solid #d1fae5;
         flex-shrink: 0;
     }
 
@@ -220,9 +246,9 @@
 {{-- HERO BANNER --}}
 <div class="profile-hero py-10 px-4">
     <div class="max-w-3xl mx-auto flex items-center gap-5">
-        {{-- Avatar --}}
+        {{-- Avatar bulat --}}
         <div class="avatar-ring">
-            {{ strtoupper(substr($user->name, 0, 1)) }}
+            <img src="{{ $user->profile_photo_url }}" alt="Foto profil {{ $user->name }}">
         </div>
         <div class="text-white">
             <div class="text-xs font-semibold uppercase tracking-widest opacity-70 mb-1">Profil Saya</div>
@@ -250,9 +276,22 @@
                 </div>
             </div>
             <div class="section-card-body">
-                <form method="post" action="{{ route('profile.update') }}">
+                <form method="post" action="{{ route('profile.update') }}" enctype="multipart/form-data">
                     @csrf
                     @method('patch')
+
+                    <div class="photo-upload-row">
+                        <img src="{{ $user->profile_photo_url }}" alt="Foto profil {{ $user->name }}" class="photo-preview">
+                        <div class="flex-1">
+                            <label for="profile_photo">Foto Profil</label>
+                            <input id="profile_photo" name="profile_photo" type="file" accept="image/*"
+                                class="form-control {{ $errors->get('profile_photo') ? 'error' : '' }}">
+                            <p style="font-size:0.72rem;color:#9ca3af;margin-top:0.35rem">Format JPG/PNG, maksimal 2MB.</p>
+                            @foreach($errors->get('profile_photo') as $error)
+                                <div class="form-error">{{ $error }}</div>
+                            @endforeach
+                        </div>
+                    </div>
 
                     <div class="form-group">
                         <label for="name">Nama Lengkap</label>

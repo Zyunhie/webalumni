@@ -2,14 +2,13 @@
 
 @section('title', 'Kelola Lowongan Kerja')
 
+
 @section('content')
-<section
-    class="relative h-[400px] flex items-center justify-center text-center text-white bg-cover bg-center"
-    style="background-image: url('{{ asset('images/Branda.jpg') }}');"
->
-</section>
+
+@include('components.hero-lowongan-section')
 
 <div class="px-4 sm:px-6 lg:px-8 py-8">
+
     <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
             <h1 class="text-2xl font-bold text-gray-900">Lowongan Kerja</h1>

@@ -6,6 +6,7 @@ use App\Models\Lowongan;
 use App\Models\Alumni;
 use App\Models\Lamaran;
 use Illuminate\Http\Request;
+use App\Models\HeroSlide;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -17,6 +18,7 @@ class LowonganController extends Controller
      */
     public function index(Request $request)
     {
+        $heroLowongan = HeroSlide::where('page', 'lowongan')->where('aktif', true)->first();
         $prodiFilter = $request->query('prodi');
         $search      = $request->query('search');
 
@@ -45,7 +47,7 @@ class LowonganController extends Controller
         $lowongans = $query->paginate(12);
         $prodis    = ['pgmi', 'pai', 'piaud', 'mpi', 'bkpi', 'eksyar', 'as', 'htn', 'pai-s2'];
 
-        return view('lowongan.index', compact('lowongans', 'prodiFilter', 'search', 'prodis'));
+        return view('lowongan.index', compact('heroLowongan', 'lowongans', 'prodiFilter', 'search', 'prodis'));
     }
 
     /**

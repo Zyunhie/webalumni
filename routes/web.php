@@ -10,6 +10,7 @@ use App\Http\Controllers\LowonganController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\AboutController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\UserVerificationController;
 use App\Http\Controllers\KontakController;
 
 require __DIR__ . '/auth.php';
@@ -213,7 +214,7 @@ Route::middleware(['auth', 'role:alumni'])->prefix('alumni')->name('alumni.')->g
 | AUTHENTICATED USER AREA
 |--------------------------------------------------------------------------
 */
-Route::middleware('auth', 'checkstatus')->group(function () {
+Route::middleware(['auth', 'checkstatus'])->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard', [
             'heroSlides'  => \App\Models\HeroSlide::aktif()->get(),
@@ -264,9 +265,26 @@ Route::middleware(['auth', 'role:admin'])
         Route::post('/alumni/import', [AlumniController::class, 'import'])->name('alumni.import');
         Route::get('/alumni/template', [AlumniController::class, 'downloadTemplate'])->name('alumni.template');
 
-        Route::resource('/users', UserController::class);
-        Route::post('/users/{user}/approve', [UserController::class, 'approve'])->name('users.approve');
-        Route::post('/users/{user}/reject', [UserController::class, 'reject'])->name('users.reject');
+        // ============ USER MANAGEMENT (FIXED - NO DUPLICATION) ============
+        // Gunakan UserVerificationController untuk verifikasi akun (pending, approve, reject)
+        Route::prefix('users')->name('users.')->group(function () {
+            Route::get('/pending', [UserVerificationController::class, 'index'])->name('pending');
+            Route::post('/{user}/approve', [UserVerificationController::class, 'approve'])->name('approve');
+            Route::post('/{user}/reject', [UserVerificationController::class, 'reject'])->name('reject');
+            Route::get('/approved', [UserVerificationController::class, 'approvedList'])->name('approved');
+            Route::get('/rejected', [UserVerificationController::class, 'rejectedList'])->name('rejected');
+        });
+        
+        // CRUD untuk user management (index, create, edit, delete) 
+        // TANPA approve/reject karena sudah ditangani di atas
+        Route::get('/users', [UserController::class, 'index'])->name('users.index');
+        Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+        Route::post('/users', [UserController::class, 'store'])->name('users.store');
+        Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
+        Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+        Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+        Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+        // ================================================================
 
         Route::get('berita', [BeritaController::class, 'adminIndex'])->name('berita.index');
         Route::get('berita/create', [BeritaController::class, 'create'])->name('berita.create');

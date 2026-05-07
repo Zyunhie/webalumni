@@ -3,21 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pesan;
+use App\Models\HeroSlide;
 use Illuminate\Http\Request;
 
 class KontakController extends Controller
 {
-    // Menampilkan halaman kontak (publik)
+    // Halaman publik kontak
     public function index()
     {
-        return view('kontak');
+        $heroKontak = HeroSlide::where('page', 'kontak')->where('aktif', true)->first();
+        return view('kontak', compact('heroKontak'));
     }
 
-    // Menyimpan pesan dari form kontak
+    // Simpan pesan dari form kontak
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nama' => 'required|string|max:255',
+            'nama'  => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'pesan' => 'required|string',
         ]);
@@ -30,33 +32,35 @@ class KontakController extends Controller
     // Admin: Daftar pesan
     public function adminIndex(Request $request)
     {
+        $HeroKontak = HeroSlide::where('page', 'kontak')->where('aktif', true)->first();
+
         $query = Pesan::query();
 
-        // Filter tanggal (single date)
         if ($request->filled('tanggal')) {
             $query->whereDate('created_at', $request->tanggal);
         }
 
-        // Filter rentang tanggal (jika disediakan)
         if ($request->filled('start_date') && $request->filled('end_date')) {
-            $query->whereBetween('created_at', [$request->start_date, $request->end_date]);
+            $query->whereBetween('created_at', [
+                $request->start_date . ' 00:00:00',
+                $request->end_date   . ' 23:59:59',
+            ]);
         }
 
-        // Filter status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
         $pesans = $query->orderBy('created_at', 'desc')->paginate(15);
 
-        return view('admin.kontak.index', compact('pesans'));
+        return view('admin.kontak.index', compact('HeroKontak', 'pesans'));
     }
 
     // Admin: Tandai sudah dibaca
     public function markAsRead(Pesan $pesan)
     {
         $pesan->update([
-            'status' => 'dibaca',
+            'status'      => 'dibaca',
             'dibaca_pada' => now(),
         ]);
 
@@ -74,7 +78,7 @@ class KontakController extends Controller
     public function markAllAsRead()
     {
         Pesan::where('status', 'belum_dibaca')->update([
-            'status' => 'dibaca',
+            'status'      => 'dibaca',
             'dibaca_pada' => now(),
         ]);
 

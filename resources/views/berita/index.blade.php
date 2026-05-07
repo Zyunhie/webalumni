@@ -2,15 +2,20 @@
 
 @section('content')
     <!-- Hero Section -->
-    <section class="relative h-[400px] flex items-center justify-center text-center text-white bg-cover bg-center"
-        style="background-image: url('{{ asset('images/Branda.jpg') }}');">
-        <div class="absolute inset-0 bg-black bg-opacity-40 flex flex-col justify-center items-center text-white">
-            <h1 class="text-4xl font-bold">Berita</h1>
-            <p class="mt-2 text-sm">
-                <a href="{{ route('dashboard') }}" class="hover:underline">Beranda</a> > Berita
-            </p>
-        </div>
-    </section>
+    <section class="relative h-[400px] bg-cover bg-center overflow-hidden"
+    style="background-image: url('{{ isset($heroBerita) && $heroBerita ? Storage::url($heroBerita->gambar) : asset('images/Branda.jpg') }}');">
+
+    @if(auth()->check() && auth()->user()->role === 'admin')
+        <a href="{{ route('admin.hero.index') }}"
+            class="absolute bottom-4 right-4 z-10 bg-white bg-opacity-90 hover:bg-opacity-100 text-green-700 font-semibold text-xs px-4 py-2 rounded-full shadow-lg transition flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            Kelola Slider
+        </a>
+    @endif
+</section>
 
     <!-- Berita Terbaru -->
     <section class="max-w-6xl mx-auto px-6 py-12">

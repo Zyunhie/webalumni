@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\HeroSlide;
 use App\Models\Berita;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -16,16 +17,19 @@ $this->middleware('auth')->except(['index', 'show']);
     // Halaman publik daftar berita
     public function index()
     {
-        $berita = Berita::orderBy('tanggal', 'desc')->paginate(10);
-        return view('berita.index', compact('berita'));
+        $heroBerita = HeroSlide::where('page', 'berita')->where('aktif', true)->first();
+        $berita = Berita::latest()->paginate(9);
+        return view('berita.index', compact('heroBerita', 'berita'));
     }
 
     // Halaman admin daftar berita
     public function adminIndex()
     {
+        $HeroBerita = HeroSlide::where('page', 'berita')->where('aktif', true)->first();
         $berita = Berita::orderBy('tanggal', 'desc')->paginate(15);
-        return view('admin.berita.index', compact('berita'));
+        return view('admin.berita.index', compact('berita', 'HeroBerita'));
     }
+
 
     // Halaman form tambah berita (admin)
     public function create()

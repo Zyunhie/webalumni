@@ -2,30 +2,36 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
     /**
      * Seed the application's database.
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'password' => bcrypt('12345678'),
-            'role' => 'admin',
+        // Urutan seeder penting karena ada relasi foreign key
+        $this->call([
+            // 1. Seeder untuk tabel yang tidak punya foreign key dulu
+            HeroSlideSeeder::class,     // Tidak ada relasi
+            AgendaSeeder::class,        // Tidak ada relasi ke user/alumni
+            
+            // 2. Seeder untuk users (admin & alumni)
+            AdminAndAlumniSeeder::class, // Buat akun user dulu
+            
+            // 3. Seeder untuk alumni (data import) - setelah users ada
+            AlumniSeeder::class,         // Data alumni import (bisa punya user_id)
         ]);
-
-        $this->call(AlumniSeeder::class);
-        $this->call(AgendaSeeder::class);
-        $this->call(HeroslideSeeder::class);
+        
+        $this->command->info('');
+        $this->command->info('✅ All seeders completed successfully!');
+        $this->command->info('');
+        $this->command->info('📋 LOGIN CREDENTIALS:');
+        $this->command->info('   Admin: admin@alumni.com / password');
+        $this->command->info('   Alumni: ahmad@alumni.com / password');
+        $this->command->info('   Alumni: siti@alumni.com / password');
+        $this->command->info('   Alumni (pending): budi@alumni.com / password');
+        $this->command->info('');
     }
 }

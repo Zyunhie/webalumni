@@ -1,15 +1,15 @@
-# TODO: Rapihin Dashboard - ✅ SELESAI!
+# TODO - Hero slide global (Mode B)
 
-✅ **STEP 1**: Buat plan edit dashboard.blade.php ✓  
-✅ **STEP 2**: Edit `resources/views/dashboard.blade.php` dengan:  
-   - Hero greeting personalisasi  
-   - Statistik cards gradient (lamaran, approved, status alumni)  
-   - Quick actions 4 cards (profile, data alumni, upload, lowongan)  
-   - Recent lamaran list  
-   - Mini sliders agenda & lowongan  
-   - Full responsive + hover effects  
-
-✅ **STEP 3**: Test: `php artisan view:clear && php artisan serve` → `/dashboard`  
-
-✅ **STEP 4**: Task completed!
-
+- [ ] Buat partial hero global: `resources/views/components/hero-global.blade.php`
+  - Ambil hero slides dari `hero_slides`.
+  - Home/beranda/dashboard: ambil **4** slide (page = `home` atau `beranda` atau `home/dashboard` sesuai data).
+  - Halaman lain: ambil **1** slide (page sesuai nama halaman: `berita`, `lowongan`, `kontak`, `agenda`, `testimoni`, `tentang`, `alumni`, dll).
+  - Fallback: `images/Branda.jpg`.
+- [ ] Edit `resources/views/layouts/app.blade.php` untuk memanggil partial hero global.
+- [ ] Bersihkan/abaikan penggunaan variabel hero manual di beberapa blade agar tidak bentrok (tetap aman kalau variabel belum dikirim).
+- [ ] Jalankan `php artisan view:clear` dan uji minimal:
+  - `GET /` (home)
+  - `GET /dashboard` (admin)
+  - `GET /admin/berita`
+  - `GET /admin/lowongan`
+  - `GET /berita`, `GET /lowongan`, `GET /kontak`

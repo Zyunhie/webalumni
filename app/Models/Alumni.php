@@ -26,20 +26,25 @@ class Alumni extends Model
         'foto',
         'ijazah',
         'transkrip',
-        'user_id',
         'status',
+        'user_id',
+        'pending_data',
+        'rejection_reason',
         'approved_by',
         'approved_at',
     ];
 
     protected $casts = [
+        'angkatan' => 'integer',
+        'lulusan' => 'integer',
         'approved_at' => 'datetime',
+        'pending_data' => 'array',
     ];
 
     // Relasi ke user
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     // Relasi ke admin yang approve
@@ -51,47 +56,43 @@ class Alumni extends Model
     // Accessor untuk URL foto
     public function getFotoUrlAttribute()
     {
-        if ($this->foto) {
+        if ($this->foto && Storage::disk('public')->exists($this->foto)) {
             return Storage::url($this->foto);
         }
-        // Default jika tidak ada foto
-        return asset('images/K.jpeg');
+        return asset('images/default-avatar.png');
     }
 
     // Accessor untuk URL ijazah
     public function getIjazahUrlAttribute()
     {
-        if (!$this->ijazah) return null;
-        
-        // Jika path sudah dimulai dengan 'upload/' atau 'http', gunakan asset langsung
-        if (str_starts_with($this->ijazah, 'upload/') || str_starts_with($this->ijazah, 'http')) {
-            return asset($this->ijazah);
+        if ($this->ijazah && Storage::disk('public')->exists($this->ijazah)) {
+            return Storage::url($this->ijazah);
         }
-        // Jika path dari Storage (storage/app/public/)
-        return Storage::url($this->ijazah);
+        return null;
     }
 
     // Accessor untuk URL transkrip
     public function getTranskripUrlAttribute()
     {
-        if (!$this->transkrip) return null;
-        
-        // Jika path sudah dimulai dengan 'upload/' atau 'http', gunakan asset langsung
-        if (str_starts_with($this->transkrip, 'upload/') || str_starts_with($this->transkrip, 'http')) {
-            return asset($this->transkrip);
+        if ($this->transkrip && Storage::disk('public')->exists($this->transkrip)) {
+            return Storage::url($this->transkrip);
         }
-        // Jika path dari Storage (storage/app/public/)
-        return Storage::url($this->transkrip);
+        return null;
     }
 
-    /**
-     * Relasi ke lamaran alumni
-     */
-    public function lamarans()
+    // Helper status
+    public function isApproved()
     {
-        return $this->hasMany(Lamaran::class);
+        return $this->status === 'approved';
+    }
+
+    public function isPending()
+    {
+        return $this->status === 'pending';
+    }
+
+    public function isRejected()
+    {
+        return $this->status === 'rejected';
     }
 }
-
-
-

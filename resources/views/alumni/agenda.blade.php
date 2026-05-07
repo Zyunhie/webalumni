@@ -5,12 +5,6 @@
     {{-- Hero Section --}}
     <section class="relative h-[400px] bg-cover bg-center"
         style="background-image: url('{{ $heroAgenda ? Storage::url($heroAgenda->gambar) : asset('images/Branda.jpg') }}');">
-        <div class="absolute inset-0 bg-black bg-opacity-40 flex flex-col justify-center items-center text-white">
-            <h1 class="text-4xl font-bold">Agenda</h1>
-            <p class="mt-2 text-sm">
-                <a href="{{ route('home') }}" class="hover:underline">Beranda</a> > Agenda
-            </p>
-        </div>
         @if(auth()->check() && auth()->user()->role === 'admin')
             <a href="{{ route('admin.hero.index') }}"
                 class="absolute bottom-4 right-4 z-10 bg-white bg-opacity-90 hover:bg-opacity-100 text-green-700 font-semibold text-xs px-4 py-2 rounded-full shadow-lg transition flex items-center gap-2">

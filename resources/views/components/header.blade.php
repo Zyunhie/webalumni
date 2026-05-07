@@ -102,6 +102,27 @@
                         </a>
                     @endauth
 
+                    {{-- ✅ VERIFIKASI AKUN (Admin Only) - TAMBAHKAN DI SINI ✅ --}}
+                    @auth
+                        @if(auth()->user()->role === 'admin')
+                            @php 
+                                $pendingCount = \App\Models\User::where('status', 'pending')->count();
+                                $isVerifikasi = request()->routeIs('admin.users.*');
+                            @endphp
+                            <a href="{{ route('admin.users.pending') }}"
+                               class="group relative px-3 py-2 text-white font-medium text-sm rounded-lg transition-all duration-300 
+                                      {{ $isVerifikasi ? 'bg-white/20 font-semibold shadow-md' : 'hover:bg-white/20 hover:shadow-md hover:-translate-y-0.5' }}">
+                                <span class="{{ $isVerifikasi ? 'underline underline-offset-4' : '' }}">Verifikasi Akun</span>
+                                @if($pendingCount > 0)
+                                    <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full animate-pulse">
+                                        {{ $pendingCount }}
+                                    </span>
+                                @endif
+                                <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-white/0 group-hover:bg-white transition-all duration-300"></div>
+                            </a>
+                        @endif
+                    @endauth
+
                     {{-- Kelola Pesan (Admin Only) --}}
                     @auth
                         @if(auth()->user()->role === 'admin')
@@ -157,7 +178,7 @@
                     {{-- Desktop: seluruh card jadi link ke profile --}}
                     <a href="{{ route('profile') }}"
                        class="flex items-center space-x-2 bg-white/10 px-3 py-1.5 rounded-xl backdrop-blur hover:bg-white/20 transition-all duration-300 border border-white/30 hover:shadow-md">
-                        <img src="{{ asset('upload/foto/K.jpeg') }}"
+                        <img src="{{ auth()->user()->profile_photo_url }}"
                              onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'User') }}&background=10b981&color=ffffff&bold=true'; this.onerror=null;"
                              class="w-8 h-8 rounded-full shadow-md ring-2 ring-white/40 transition-all duration-200" alt="Foto Profile">
                         <span class="text-white font-medium text-xs max-w-[120px] truncate">{{ auth()->user()->name }}</span>
@@ -201,7 +222,7 @@
         {{-- Info user mobile --}}
         <div class="flex items-center space-x-3 p-3 bg-white/10 rounded-xl backdrop-blur border border-white/20">
             @auth
-                <img src="{{ asset('upload/foto/K.jpeg') }}" 
+                <img src="{{ auth()->user()->profile_photo_url }}" 
                      onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'User') }}&background=10b981&color=ffffff&bold=true'; this.onerror=null;"
                      class="w-10 h-10 rounded-xl shadow-md cursor-pointer hover:scale-105 transition-all" alt="Foto Profile">
                 <div>
@@ -287,6 +308,28 @@
                 </svg>
                 <span class="text-white font-medium">Lowongan Kerja</span>
             </a>
+        @endauth
+
+        {{-- ✅ VERIFIKASI AKUN (Admin Only) - TAMBAHKAN DI MOBILE MENU ✅ --}}
+        @auth
+            @if(auth()->user()->role === 'admin')
+                @php $pendingCount = \App\Models\User::where('status', 'pending')->count(); @endphp
+                <a href="{{ route('admin.users.pending') }}" 
+                   class="block p-4 rounded-2xl transition-all duration-300 flex items-center justify-between
+                          {{ request()->routeIs('admin.users.*') ? 'bg-white/30 border-l-4 border-white pl-3' : 'bg-white/10 hover:bg-white/20' }}">
+                    <div class="flex items-center space-x-3">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"/>
+                        </svg>
+                        <span class="text-white font-medium">Verifikasi Akun</span>
+                    </div>
+                    @if($pendingCount > 0)
+                        <span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full animate-pulse">
+                            {{ $pendingCount }}
+                        </span>
+                    @endif
+                </a>
+            @endif
         @endauth
 
         {{-- Kelola Pesan (Admin) --}}

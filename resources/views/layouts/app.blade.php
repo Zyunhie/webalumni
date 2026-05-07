@@ -28,10 +28,12 @@
     {{-- Header (Navbar) --}}
     @include('components.header')
 
+
     {{-- Main Content --}}
     <main class="flex-grow">
         @yield('content')
     </main>
+
 
     {{-- Footer --}}
     @include('components.footer')
@@ -39,3 +41,4 @@
 </body>
 
 </html>
+

@@ -5,12 +5,6 @@
     <!-- ================= HERO SECTION ================= -->
     <section class="relative h-[400px] bg-cover bg-center overflow-hidden"
         style="background-image: url('{{ $heroTentang ? Storage::url($heroTentang->gambar) : asset('images/Branda.jpg') }}');">
-        <div class="absolute inset-0 bg-black bg-opacity-40 flex flex-col justify-center items-center text-white">
-            <h1 class="text-4xl font-bold">Tentang Kami</h1>
-            <p class="mt-2 text-sm">
-                <a href="{{ route('dashboard') }}" class="hover:underline">Beranda</a> > Tentang
-            </p>
-        </div>
 
         @if(auth()->check() && trim(auth()->user()->role) === 'admin')
             <a href="{{ route('admin.hero.index') }}"

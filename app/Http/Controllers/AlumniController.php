@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class AlumniController extends Controller
@@ -16,7 +17,7 @@ class AlumniController extends Controller
     public function __construct()
     {
         $this->middleware('auth')->except(['index', 'show']);
-        $this->middleware('role:admin')->only(['pending', 'approve', 'reject']);
+        $this->middleware('role:admin')->only(['pending', 'approve', 'reject', 'import', 'downloadTemplate']);
     }
 
     /**
@@ -50,12 +51,11 @@ class AlumniController extends Controller
 
         // Jika mode pending dan user bukan admin, redirect ke index normal
         if ($request->get('mode') === 'pending') {
-            if (!auth()->check() || auth()->user()->role !== 'admin') {
-                // DEBUG: Auth lost on toggle - check logs
+            if (!Auth::check() || Auth::user()->role !== 'admin') {
                 Log::info('ALUMNI TOGGLE DEBUG', [
-                    'auth_check' => auth()->check(),
-                    'user_id' => auth()->id(),
-                    'role' => auth()->user()?->role ?? 'no user',
+                    'auth_check' => Auth::check(),
+                    'user_id' => Auth::id(),
+                    'role' => Auth::user()?->role ?? 'no user',
                     'session_id' => session()->getId(),
                     'url' => $request->fullUrl(),
                     'ip' => $request->ip()
@@ -68,7 +68,7 @@ class AlumniController extends Controller
         }
 
         // Guest hanya lihat approved
-        if (!auth()->check()) {
+        if (!Auth::check()) {
             $query->where('status', 'approved');
         }
 
@@ -85,8 +85,17 @@ class AlumniController extends Controller
             $query->where('angkatan', $request->angkatan);
         }
 
+        if ($request->filled('search')) {
+    $search = $request->search;
+
+    $query->where(function ($q) use ($search) {
+        $q->where('nama', 'like', '%' . $search . '%')
+          ->orWhere('nim', 'like', '%' . $search . '%');
+    });
+}
+
         // Mode pending untuk admin
-        if ($request->get('mode') === 'pending' && auth()->check() && auth()->user()->role === 'admin') {
+        if ($request->get('mode') === 'pending' && Auth::check() && Auth::user()->role === 'admin') {
             $query->where('status', 'pending');
         }
 
@@ -94,14 +103,14 @@ class AlumniController extends Controller
 
         // AJAX partial for toggle
         if ($request->header('X-Requested-With') === 'XMLHttpRequest') {
-            return view('alumni.partials.table', compact('alumni', 'routePrefix'));
+            return view('alumni.partials.table', compact('alumni'));
         }
 
         $angkatanList = Alumni::distinct()->orderBy('angkatan', 'desc')->pluck('angkatan');
         $routePrefix = $this->getProdiRoute($prodi ?? 'PGMI');
         $heroAlumni = HeroSlide::aktif()->forPage('alumni')->first();
 
-        return view('alumni.index', compact('alumni', 'angkatanList', 'prodi', 'routePrefix','heroAlumni'));
+        return view('alumni.index', compact('alumni', 'angkatanList', 'prodi', 'routePrefix', 'heroAlumni'));
     }
 
     /**
@@ -133,8 +142,8 @@ class AlumniController extends Controller
 
         // Jika admin, ambil daftar user untuk dipilih (opsional)
         $users = [];
-        if (auth()->user()->role === 'admin') {
-            $users = User::where('role', '!=', 'admin')->orWhere('role', 'alumni')->get();
+        if (Auth::check() && Auth::user()->role === 'admin') {
+            $users = User::where('role', 'alumni')->get();
         }
 
         return view('alumni.create', compact('selectedProdi', 'users'));
@@ -161,33 +170,33 @@ class AlumniController extends Controller
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'ijazah' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'transkrip' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
-            'user_id' => 'nullable|exists:users,id', // khusus admin
+            'user_id' => 'nullable|exists:users,id',
         ]);
 
         $data = $request->except(['foto', 'ijazah', 'transkrip', 'user_id']);
 
         // Penentuan user_id
-        if (auth()->user()->role === 'admin') {
+        if (Auth::check() && Auth::user()->role === 'admin') {
             if ($request->filled('user_id')) {
-                // Admin pilih user yang sudah ada
                 $data['user_id'] = $request->user_id;
             } else {
-                // Admin tidak pilih user_id → buat user baru
                 $user = User::create([
                     'name' => $request->nama,
                     'email' => $request->email ?? ($request->nim ? $request->nim . '@alumni.temp.com' : Str::random(10) . '@temp.com'),
                     'password' => $request->nim ? Hash::make($request->nim) : Hash::make(Str::random(8)),
                     'role' => 'alumni',
                     'nim' => $request->nim,
+                    'verification_status' => 'approved',
                 ]);
                 $data['user_id'] = $user->id;
             }
             $data['status'] = 'approved';
-            $data['approved_by'] = auth()->id();
+            $data['approved_by'] = Auth::id();
             $data['approved_at'] = now();
         } else {
-            // User biasa: langsung pakai user_id nya sendiri
-            $data['user_id'] = auth()->id();
+            if (Auth::check()) {
+                $data['user_id'] = Auth::id();
+            }
             $data['status'] = 'pending';
         }
 
@@ -205,7 +214,7 @@ class AlumniController extends Controller
         Alumni::create($data);
 
         $redirectRoute = $this->getProdiRoute($request->prodi);
-        $message = (auth()->user()->role === 'admin')
+        $message = (Auth::check() && Auth::user()->role === 'admin')
             ? 'Data alumni berhasil ditambahkan (approved).'
             : 'Data berhasil dikirim dan menunggu persetujuan admin.';
 
@@ -221,9 +230,9 @@ class AlumniController extends Controller
 
         if (
             $alumni->status !== 'approved' &&
-            auth()->check() &&
-            auth()->user()->role !== 'admin' &&
-            $alumni->user_id !== auth()->id()
+            Auth::check() &&
+            Auth::user()->role !== 'admin' &&
+            $alumni->user_id !== Auth::id()
         ) {
             abort(403, 'Anda tidak berhak mengakses data ini.');
         }
@@ -239,7 +248,7 @@ class AlumniController extends Controller
     {
         $alumni = Alumni::findOrFail($id);
 
-        if (auth()->user()->role != 'admin' && $alumni->user_id !== auth()->id()) {
+        if (!Auth::check() || (Auth::user()->role != 'admin' && $alumni->user_id !== Auth::id())) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -254,7 +263,7 @@ class AlumniController extends Controller
     {
         $alumni = Alumni::findOrFail($id);
 
-        if (auth()->user()->role != 'admin' && $alumni->user_id !== auth()->id()) {
+        if (!Auth::check() || (Auth::user()->role != 'admin' && $alumni->user_id !== Auth::id())) {
             abort(403);
         }
 
@@ -270,27 +279,24 @@ class AlumniController extends Controller
             'no_hp' => 'nullable|string|max:20',
             'alamat' => 'nullable|string',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'ijazah' => 'nullable|file|mimes:pdf,jpeg,jpg,png|max:5120',
-            'transkrip' => 'nullable|file|mimes:pdf,jpeg,jpg,png|max:5120',
+            'ijazah' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'transkrip' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
         // Jika admin, langsung update tanpa pending
-        if (auth()->user()->role == 'admin') {
+        if (Auth::user()->role == 'admin') {
             $data = $request->except(['_token', '_method', 'foto', 'ijazah', 'transkrip']);
-            // handle file upload langsung (sama seperti kode admin sebelumnya)
+
             if ($request->hasFile('foto')) {
-                if ($alumni->foto)
-                    Storage::disk('public')->delete($alumni->foto);
+                if ($alumni->foto) Storage::disk('public')->delete($alumni->foto);
                 $data['foto'] = $request->file('foto')->store('foto_alumni', 'public');
             }
             if ($request->hasFile('ijazah')) {
-                if ($alumni->ijazah)
-                    Storage::disk('public')->delete($alumni->ijazah);
+                if ($alumni->ijazah) Storage::disk('public')->delete($alumni->ijazah);
                 $data['ijazah'] = $request->file('ijazah')->store('ijazah', 'public');
             }
             if ($request->hasFile('transkrip')) {
-                if ($alumni->transkrip)
-                    Storage::disk('public')->delete($alumni->transkrip);
+                if ($alumni->transkrip) Storage::disk('public')->delete($alumni->transkrip);
                 $data['transkrip'] = $request->file('transkrip')->store('transkrip', 'public');
             }
             $alumni->update($data);
@@ -298,10 +304,9 @@ class AlumniController extends Controller
                 ->with('success', 'Data berhasil diperbarui (oleh admin).');
         }
 
-        // Jika bukan admin (yaitu pemilik data), simpan perubahan ke pending_data
+        // Jika bukan admin, simpan perubahan ke pending_data
         $pendingData = $request->except(['_token', '_method', 'foto', 'ijazah', 'transkrip']);
 
-        // Upload file sementara ke folder pending_*
         if ($request->hasFile('foto')) {
             $pendingData['foto'] = $request->file('foto')->store('pending_foto', 'public');
         }
@@ -329,16 +334,13 @@ class AlumniController extends Controller
     {
         $alumni = Alumni::findOrFail($id);
 
-        if (auth()->user()->role != 'admin' && $alumni->user_id !== auth()->id()) {
+        if (!Auth::check() || (Auth::user()->role != 'admin' && $alumni->user_id !== Auth::id())) {
             abort(403);
         }
 
-        if ($alumni->foto)
-            Storage::disk('public')->delete($alumni->foto);
-        if ($alumni->ijazah)
-            Storage::disk('public')->delete($alumni->ijazah);
-        if ($alumni->transkrip)
-            Storage::disk('public')->delete($alumni->transkrip);
+        if ($alumni->foto) Storage::disk('public')->delete($alumni->foto);
+        if ($alumni->ijazah) Storage::disk('public')->delete($alumni->ijazah);
+        if ($alumni->transkrip) Storage::disk('public')->delete($alumni->transkrip);
 
         $alumni->delete();
 
@@ -354,7 +356,7 @@ class AlumniController extends Controller
     {
         $alumni = Alumni::findOrFail($id);
 
-        if ($alumni->user_id != auth()->id()) {
+        if (!Auth::check() || $alumni->user_id != Auth::id()) {
             abort(403, 'Anda hanya bisa mengupload dokumen untuk data Anda sendiri.');
         }
 
@@ -369,7 +371,7 @@ class AlumniController extends Controller
     {
         $alumni = Alumni::findOrFail($id);
 
-        if ($alumni->user_id != auth()->id()) {
+        if (!Auth::check() || $alumni->user_id != Auth::id()) {
             abort(403);
         }
 
@@ -379,15 +381,13 @@ class AlumniController extends Controller
         ]);
 
         // Jika admin, langsung upload ke kolom utama
-        if (auth()->user()->role == 'admin') {
+        if (Auth::user()->role == 'admin') {
             if ($request->hasFile('ijazah')) {
-                if ($alumni->ijazah)
-                    Storage::disk('public')->delete($alumni->ijazah);
+                if ($alumni->ijazah) Storage::disk('public')->delete($alumni->ijazah);
                 $alumni->ijazah = $request->file('ijazah')->store('ijazah', 'public');
             }
             if ($request->hasFile('transkrip')) {
-                if ($alumni->transkrip)
-                    Storage::disk('public')->delete($alumni->transkrip);
+                if ($alumni->transkrip) Storage::disk('public')->delete($alumni->transkrip);
                 $alumni->transkrip = $request->file('transkrip')->store('transkrip', 'public');
             }
             $alumni->save();
@@ -419,10 +419,10 @@ class AlumniController extends Controller
      */
     public function profile()
     {
-        $user = auth()->user();
+        $user = Auth::user();
         $alumni = Alumni::where('user_id', $user->id)->get();
         return view('profile.edit', [
-            'user' => auth()->user(),
+            'user' => Auth::user(),
             'alumni' => $alumni,
         ]);
     }
@@ -442,44 +442,36 @@ class AlumniController extends Controller
         $pending = $alumni->pending_data ? json_decode($alumni->pending_data, true) : [];
 
         if (!empty($pending)) {
-            // Pindahkan file dari pending_* ke folder permanen jika ada
-            if (isset($pending['foto']) && file_exists(storage_path('app/public/' . $pending['foto']))) {
-                // Hapus foto lama jika ada
-                if ($alumni->foto)
-                    Storage::disk('public')->delete($alumni->foto);
-                // Pindahkan file (rename) ke folder permanen
+            if (isset($pending['foto']) && Storage::disk('public')->exists($pending['foto'])) {
+                if ($alumni->foto) Storage::disk('public')->delete($alumni->foto);
                 $newPath = 'foto_alumni/' . basename($pending['foto']);
                 Storage::disk('public')->move($pending['foto'], $newPath);
                 $pending['foto'] = $newPath;
             }
-            if (isset($pending['ijazah']) && file_exists(storage_path('app/public/' . $pending['ijazah']))) {
-                if ($alumni->ijazah)
-                    Storage::disk('public')->delete($alumni->ijazah);
+            if (isset($pending['ijazah']) && Storage::disk('public')->exists($pending['ijazah'])) {
+                if ($alumni->ijazah) Storage::disk('public')->delete($alumni->ijazah);
                 $newPath = 'ijazah/' . basename($pending['ijazah']);
                 Storage::disk('public')->move($pending['ijazah'], $newPath);
                 $pending['ijazah'] = $newPath;
             }
-            if (isset($pending['transkrip']) && file_exists(storage_path('app/public/' . $pending['transkrip']))) {
-                if ($alumni->transkrip)
-                    Storage::disk('public')->delete($alumni->transkrip);
+            if (isset($pending['transkrip']) && Storage::disk('public')->exists($pending['transkrip'])) {
+                if ($alumni->transkrip) Storage::disk('public')->delete($alumni->transkrip);
                 $newPath = 'transkrip/' . basename($pending['transkrip']);
                 Storage::disk('public')->move($pending['transkrip'], $newPath);
                 $pending['transkrip'] = $newPath;
             }
 
-            // Terapkan perubahan ke kolom utama
             $alumni->update(array_merge($pending, [
                 'status' => 'approved',
                 'pending_data' => null,
                 'rejection_reason' => null,
-                'approved_by' => auth()->id(),
+                'approved_by' => Auth::id(),
                 'approved_at' => now(),
             ]));
         } else {
-            // Jika tidak ada pending_data, hanya ubah status
             $alumni->update([
                 'status' => 'approved',
-                'approved_by' => auth()->id(),
+                'approved_by' => Auth::id(),
                 'approved_at' => now(),
             ]);
         }
@@ -492,7 +484,6 @@ class AlumniController extends Controller
         $request->validate(['reason' => 'required|string|max:1000']);
         $alumni = Alumni::findOrFail($id);
 
-        // Hapus file-file pending jika ada
         if ($alumni->pending_data) {
             $pending = json_decode($alumni->pending_data, true) ?: [];
             foreach (['foto', 'ijazah', 'transkrip'] as $field) {
@@ -502,25 +493,22 @@ class AlumniController extends Controller
             }
         }
 
-        $updateData = [
+        $alumni->update([
             'status' => 'rejected',
             'rejection_reason' => $request->reason,
             'pending_data' => null,
-        ];
-
-        $alumni->update($updateData);
+        ]);
 
         Log::info('REJECT DEBUG', [
             'alumni_id' => $id,
             'reason' => $request->reason,
-            'updated' => $alumni->fresh()->only(['status', 'rejection_reason'])
         ]);
 
         return back()->with('error', 'Perubahan ditolak. Alasan: ' . $request->reason);
     }
 
     /**
-     * IMPORT CSV (otomatis buat user)
+     * IMPORT CSV (hanya import ke tabel alumni, TIDAK buat user otomatis)
      */
     public function import(Request $request)
     {
@@ -579,12 +567,17 @@ class AlumniController extends Controller
 
         $imported = 0;
         $errors = [];
+        $skipped = 0;
 
         foreach ($rows as $rowNum => $row) {
-            if (count($row) < count($header))
+            if (count($row) < count($header)) {
+                $skipped++;
                 continue;
-            if (empty(array_filter($row)))
+            }
+            if (empty(array_filter($row))) {
+                $skipped++;
                 continue;
+            }
 
             $nama = trim($row[$namaIndex] ?? '');
             $prodi = trim($row[$prodiIndex] ?? '');
@@ -602,31 +595,21 @@ class AlumniController extends Controller
             $no_hp = $no_hpIndex !== false ? trim($row[$no_hpIndex] ?? '') : null;
             $alamat = $alamatIndex !== false ? trim($row[$alamatIndex] ?? '') : null;
 
-            // Cari atau buat user
-            $user = null;
-            if ($email) {
-                $user = User::where('email', $email)->first();
+            // Cek apakah data sudah ada (berdasarkan NIM atau email)
+            $exists = false;
+            if ($nim) {
+                $exists = Alumni::where('nim', $nim)->exists();
             }
-            if (!$user && $nim) {
-                $user = User::where('nim', $nim)->first();
-            }
-
-            if (!$user) {
-                try {
-                    $user = User::create([
-                        'name' => $nama,
-                        'email' => $email ?? ($nim ? $nim . '@alumni.import.com' : \Illuminate\Support\Str::random(10) . '@temp.com'),
-                        'password' => \Illuminate\Support\Facades\Hash::make('password123'),
-                        'role' => 'alumni',
-                        'nim' => $nim,
-                    ]);
-                } catch (\Exception $e) {
-                    $errors[] = "Baris " . ($rowNum + 2) . ": Gagal buat user - " . $e->getMessage();
-                    continue;
-                }
+            if (!$exists && $email) {
+                $exists = Alumni::where('email', $email)->exists();
             }
 
-            // Buat alumni
+            if ($exists) {
+                $errors[] = "Baris " . ($rowNum + 2) . ": Data dengan NIM '{$nim}' atau Email '{$email}' sudah ada, dilewati.";
+                continue;
+            }
+
+            // Langsung simpan ke alumni TANPA membuat user
             try {
                 Alumni::create([
                     'nama' => $nama,
@@ -639,9 +622,9 @@ class AlumniController extends Controller
                     'email' => $email,
                     'no_hp' => $no_hp,
                     'alamat' => $alamat,
-                    'user_id' => $user->id,
+                    'user_id' => null,
                     'status' => 'approved',
-                    'approved_by' => auth()->id(),
+                    'approved_by' => Auth::id(),
                     'approved_at' => now(),
                 ]);
                 $imported++;
@@ -650,9 +633,15 @@ class AlumniController extends Controller
             }
         }
 
-        $msg = "Berhasil import $imported data.";
+        $msg = "Berhasil import $imported data alumni.";
+        if ($skipped > 0) {
+            $msg .= " $skipped baris kosong dilewati.";
+        }
         if (!empty($errors)) {
-            $msg .= " Error: " . implode('; ', $errors);
+            $msg .= " Error: " . implode('; ', array_slice($errors, 0, 5));
+            if (count($errors) > 5) {
+                $msg .= " ... dan " . (count($errors) - 5) . " error lainnya.";
+            }
             return back()->with('warning', $msg);
         }
         return back()->with('success', $msg);

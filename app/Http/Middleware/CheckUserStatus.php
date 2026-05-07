@@ -11,12 +11,31 @@ class CheckUserStatus
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::check() && Auth::user()->status !== 'approved') {
-            Auth::logout();
+        if (Auth::check()) {
+            $user = Auth::user();
             
-            return redirect()->route('login')->withErrors([
-                'email' => 'Akun Anda belum di-approve oleh admin.',
-            ]);
+            // Admin selalu bisa akses
+            if ($user->role === 'admin') {
+                return $next($request);
+            }
+            
+            // Cek status user (gunakan kolom 'status')
+            $status = $user->status ?? 'pending';
+            
+            if ($status === 'pending') {
+                Auth::logout();
+                return redirect()->route('login')->with('error', 
+                    "Akun Anda masih menunggu verifikasi admin. Silakan hubungi admin untuk informasi lebih lanjut."
+                );
+            }
+            
+            if ($status === 'rejected') {
+                Auth::logout();
+                $reason = $user->rejection_reason ? " Alasan: {$user->rejection_reason}" : '';
+                return redirect()->route('login')->with('error', 
+                    "Akun Anda ditolak oleh admin.{$reason} Silakan hubungi admin."
+                );
+            }
         }
         
         return $next($request);

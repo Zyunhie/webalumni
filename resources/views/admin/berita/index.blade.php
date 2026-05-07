@@ -3,15 +3,23 @@
 @section('content')
 
 <!-- ================= HERO SECTION ================= -->
-<section
-    class="relative h-[400px] flex items-center justify-center text-center text-white bg-cover bg-center"
-    style="background-image: url('{{ asset('images/Branda.jpg') }}');"
->
-</section>
+ <section class="relative h-[400px] bg-cover bg-center overflow-hidden"
+        style="background-image: url('{{ $HeroBerita ? Storage::url($HeroBerita->gambar) : asset('images/Branda.jpg') }}');">
 
+        @if(auth()->check() && trim(auth()->user()->role) === 'admin')
+            <a href="{{ route('admin.hero.index') }}"
+                class="absolute bottom-4 right-4 z-10 bg-white bg-opacity-90 hover:bg-opacity-100 text-green-700 font-semibold text-xs px-4 py-2 rounded-full shadow-lg transition flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Kelola Slider
+            </a>
+        @endif
+    </section>
 <div class="max-w-6xl mx-auto px-6 py-8">
     <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Kelola Beritas</h1>
+        <h1 class="text-3xl font-bold text-gray-900">Kelola Berita</h1>
         <a href="{{ route('admin.berita.create') }}" 
            class="bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all">
             <i class="bi bi-plus-lg me-2"></i>Tambah Berita

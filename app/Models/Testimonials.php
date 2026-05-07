@@ -46,8 +46,31 @@ class Testimonials extends Model
         return $query->where('status', 'pending');
     }
 
+    public function scopeRejected($query)
+    {
+        return $query->where('status', 'rejected');
+    }
+
     public function scopeMyTestimonials($query)
     {
         return $query->where('user_id', auth()->id());
+    }
+
+    public function getStatusLabelAttribute()
+    {
+        return [
+            'pending' => 'Menunggu Review',
+            'approved' => 'Dipublikasikan',
+            'rejected' => 'Perlu Revisi',
+        ][$this->status] ?? ucfirst($this->status);
+    }
+
+    public function getStatusBadgeClassAttribute()
+    {
+        return [
+            'pending' => 'bg-amber-50 text-amber-700 border-amber-200',
+            'approved' => 'bg-green-50 text-green-700 border-green-200',
+            'rejected' => 'bg-red-50 text-red-700 border-red-200',
+        ][$this->status] ?? 'bg-gray-50 text-gray-700 border-gray-200';
     }
 }

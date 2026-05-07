@@ -108,10 +108,6 @@
                                 @endif
                             @endif
                         @endif
-                    @else
-                        <a href="{{ route('login') }}" class="text-green-600 underline text-sm">
-                            Login sebagai Alumni untuk melamar
-                        </a>
                     @endauth
                 </div>
 

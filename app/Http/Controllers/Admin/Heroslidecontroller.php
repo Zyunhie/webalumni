@@ -16,40 +16,43 @@ class HeroSlideController extends Controller
     }
 
     public function store(Request $request)
-{
-    $request->validate([
-        'gambar' => 'required|image|max:3072',
-        'page'   => 'required|in:home,tentang,alumni,agenda,testimoni,berita,lowongan,kontak,users',
-    ]);
+    {
+        $request->validate([
+            'gambar' => 'required|image|max:3072',
+            'page' => 'required|in:home,tentang,alumni,agenda,testimoni,berita,lowongan,kontak,users,verifikasi_akun,kelola_user',
+        ]);
 
-    $path = $request->file('gambar')->store('hero', 'public');
+        $path = $request->file('gambar')->store('hero', 'public');
 
-    // Halaman yang hanya boleh 1 foto (single page)
-    $singlePages = ['tentang', 'alumni', 'agenda', 'testimoni', 'berita', 'lowongan', 'kontak', 'users'];
+        $singlePages = [
+            'tentang', 'alumni', 'agenda', 'testimoni',
+            'berita', 'lowongan', 'kontak', 'users',
+            'verifikasi_akun', 'kelola_user',
+        ];
 
-    if (in_array($request->page, $singlePages)) {
-        $existing = HeroSlide::where('page', $request->page)->first();
-        if ($existing) {
-            Storage::disk('public')->delete($existing->gambar);
-            $existing->delete();
+        if (in_array($request->page, $singlePages)) {
+            $existing = HeroSlide::where('page', $request->page)->first();
+            if ($existing) {
+                Storage::disk('public')->delete($existing->gambar);
+                $existing->delete();
+            }
         }
+
+        HeroSlide::create([
+            'gambar' => $path,
+            'page'   => $request->page,
+            'urutan' => HeroSlide::where('page', $request->page)->max('urutan') + 1,
+            'aktif'  => true,
+        ]);
+
+        return back()->with('success', 'Foto berhasil disimpan.');
     }
-
-    HeroSlide::create([
-        'gambar' => $path,
-        'page'   => $request->page,
-        'urutan' => HeroSlide::where('page', $request->page)->max('urutan') + 1,
-        'aktif'  => true,
-    ]);
-
-    return back()->with('success', 'Foto berhasil disimpan.');
-}
 
     public function update(Request $request, HeroSlide $heroSlide)
     {
         $request->validate([
             'gambar' => 'nullable|image|max:3072',
-            'aktif' => 'boolean',
+            'aktif'  => 'boolean',
         ]);
 
         $data = ['aktif' => $request->boolean('aktif')];
